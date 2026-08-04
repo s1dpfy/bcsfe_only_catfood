@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>냥코 통조림 편집기</title>
-    <!-- Google Fonts: Jua -->
     <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -27,17 +26,15 @@
             border-radius: 24px; 
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); 
         }
-        h1 { 
-            font-size: 46px; 
+        h2 { 
+            font-size: 26px; 
             font-weight: normal; 
             text-align: left; 
-            margin-top: -10px; 
+            margin-top: 0; 
             margin-bottom: 28px; 
             color: #191f28; 
         }
-        .section { 
-            margin-bottom: 24px; 
-        }
+        .section { margin-bottom: 24px; }
         label { 
             display: block; 
             font-weight: normal; 
@@ -103,7 +100,6 @@
         .code-val { font-size: 20px; color: #3182f6; letter-spacing: 0.5px; margin-top: 4px; word-break: break-all; }
         .error-msg { color: #f04438; font-size: 15px; text-align: center; margin-top: 8px; }
         
-        /* 로딩 스피너 스타일 */
         .spinner {
             width: 20px;
             height: 20px;
@@ -113,23 +109,15 @@
             animation: spin 0.8s linear infinite;
             display: none;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .step-disabled {
-            opacity: 0.4;
-            pointer-events: none;
-            transition: opacity 0.3s;
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .step-disabled { opacity: 0.4; pointer-events: none; transition: opacity 0.3s; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>냥코 무료 통조림</h1>
+    <h2>냥코 통조림 편집기</h2>
 
-    <!-- 1단계: 세이브 불러오기 -->
     <div class="section" id="step1">
         <label>이어하기 코드 및 인증 번호</label>
         <input type="text" id="transferCode" placeholder="이어하기 코드 입력">
@@ -141,7 +129,6 @@
         <div id="loadError" class="error-msg"></div>
     </div>
 
-    <!-- 2단계: 통조림 수정 및 재발급 -->
     <div class="section step-disabled" id="step2">
         <label>원하는 통조림 개수</label>
         <input type="number" id="catfoodInput" placeholder="예: 49999">
@@ -152,15 +139,12 @@
         <div id="modError" class="error-msg"></div>
     </div>
 
-    <!-- 결과 영역 -->
     <div id="resultSection" class="result-box">
         <div style="font-size: 18px; color: #1b64da; margin-bottom: 12px;">✨ 모딩 완료! 새 코드가 발급되었습니다</div>
-        
         <div class="code-group">
             <div class="code-label">이어하기 코드</div>
             <div class="code-val" id="resTc">-</div>
         </div>
-        
         <div class="code-group" style="margin-top: 8px;">
             <div class="code-label">인증 번호</div>
             <div class="code-val" id="resCc">-</div>
@@ -182,7 +166,6 @@
             return;
         }
 
-        // 로딩 시작
         btnText.style.display = 'none';
         spinner.style.display = 'block';
         document.getElementById('loadBtn').disabled = true;
@@ -196,8 +179,10 @@
             const data = await res.json();
 
             if(data.success) {
+                // 발급받은 개인 세션 토큰을 브라우저에 저장
+                sessionStorage.setItem('session_token', data.token);
+                
                 document.getElementById('catfoodInput').value = data.catfood;
-                // 2단계 활성화
                 const step2 = document.getElementById('step2');
                 step2.classList.remove('step-disabled');
                 step2.scrollIntoView({ behavior: 'smooth' });
@@ -207,7 +192,6 @@
         } catch(e) {
             errDiv.innerText = "서버 통신 중 오류가 발생했습니다.";
         } finally {
-            // 로딩 종료
             btnText.style.display = 'block';
             spinner.style.display = 'none';
             document.getElementById('loadBtn').disabled = false;
@@ -219,14 +203,18 @@
         const errDiv = document.getElementById('modError');
         const btnText = document.querySelector('#modBtn .btn-text');
         const spinner = document.getElementById('modSpinner');
+        const token = sessionStorage.getItem('session_token');
 
         errDiv.innerText = "";
+        if(!token) {
+            errDiv.innerText = "세션이 만료되었습니다. 페이지를 새로고침 후 다시 시도해주세요.";
+            return;
+        }
         if(!catfood) {
             errDiv.innerText = "통조림 개수를 입력해주세요.";
             return;
         }
 
-        // 로딩 시작
         btnText.style.display = 'none';
         spinner.style.display = 'block';
         document.getElementById('modBtn').disabled = true;
@@ -235,7 +223,11 @@
         formData.append('catfood', catfood);
 
         try {
-            const res = await fetch('/api/modify_and_upload', { method: 'POST', body: formData });
+            const res = await fetch('/api/modify_and_upload', { 
+                method: 'POST', 
+                headers: { 'x-session-token': token },
+                body: formData 
+            });
             const data = await res.json();
 
             if(data.success) {
@@ -249,7 +241,6 @@
         } catch(e) {
             errDiv.innerText = "서버 통신 중 오류가 발생했습니다.";
         } finally {
-            // 로딩 종료
             btnText.style.display = 'block';
             spinner.style.display = 'none';
             document.getElementById('modBtn').disabled = false;
