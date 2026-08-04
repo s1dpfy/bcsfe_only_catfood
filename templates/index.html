@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>냥코 무료 통조림</title>
     <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
     <style>
@@ -12,10 +12,10 @@
             background: linear-gradient(135deg, #eef2f3 0%, #8e9eab 100%); 
             color: #191f28; 
             margin: 0; 
-            padding: 16px 12px; 
+            padding: 24px 16px; 
             display: flex; 
             justify-content: center; 
-            align-items: center;
+            align-items: flex-start; /* 중앙 정렬에서 상단 정렬로 변경하여 키보드 올라올 때 대응 */
             min-height: 100vh;
         }
         .container { 
@@ -25,6 +25,7 @@
             padding: 20px 20px; 
             border-radius: 20px; 
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); 
+            margin-bottom: 40px;
         }
         
         /* 제목 그래디언트 */
@@ -33,7 +34,7 @@
             font-weight: normal; 
             text-align: left; 
             margin-top: 0; 
-            margin-bottom: -8px; /* 제목과 제작자 사이 간격 최소화 */
+            margin-bottom: -8px; 
             background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -42,36 +43,35 @@
         /* 제작자 이름 그래디언트 */
         .author {
             font-size: 25px;
-            margin-bottom: 16px; /* 제작자 아래 여백 축소 */
+            margin-bottom: 16px; 
             text-align: left;
             background: linear-gradient(135deg, #000000, #0004ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
         
-        .section { margin-bottom: 14px; } /* 섹션 간격 축소 */
+        .section { margin-bottom: 14px; }
         
         /* 라벨 그래디언트 & 크기 확대 */
         label { 
             display: block; 
             font-weight: normal; 
             margin-bottom: 6px; 
-            font-size: 19px; /* 라벨 크기 확대 */
+            font-size: 19px; 
             background: linear-gradient(135deg, #333d4b 0%, #6b7684 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
         
-        /* input 필드 (placeholder 크기 및 input 폰트 17px 유지, 패딩 줄임) */
         input { 
             width: 100%; 
-            padding: 12px 14px; /* input 패딩 축소 */
+            padding: 12px 14px; 
             box-sizing: border-box; 
             background-color: #f2f4f6;
             border: 1px solid transparent; 
             border-radius: 12px; 
             margin-bottom: 8px; 
-            font-size: 22px; /* 폰트/placeholder 크기 유지 */
+            font-size: 22px; 
             font-family: 'Jua', sans-serif;
             color: #191f28;
             transition: all 0.2s;
@@ -86,10 +86,9 @@
             box-shadow: 0 0 0 3px rgba(49, 130, 246, 0.15);
         }
         
-        /* 버튼 그래디언트 적용 및 패딩 축소 */
         button { 
             width: 100%; 
-            padding: 12px; /* 버튼 패딩 축소 */
+            padding: 12px; 
             background: linear-gradient(135deg, #3182f6 0%, #1b64da 100%); 
             color: white; 
             border: none; 
@@ -107,7 +106,6 @@
         button:active { transform: scale(0.98); }
         button:hover { filter: brightness(1.05); }
         
-        /* 결과 박스 그래디언트 */
         .result-box { 
             background: linear-gradient(135deg, #e8f3ff 0%, #d4e8ff 100%); 
             padding: 16px; 
