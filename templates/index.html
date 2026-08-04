@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>냥코 통조림 편집기</title>
+    <!-- Google Fonts: Jua -->
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: 'Jua', sans-serif; 
+            background-color: #f2f4f6; 
+            color: #191f28; 
+            margin: 0; 
+            padding: 24px 16px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container { 
+            width: 100%; 
+            max-width: 420px; 
+            background: #ffffff; 
+            padding: 32px 24px; 
+            border-radius: 24px; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); 
+        }
+        h1 { 
+            font-size: 46px; 
+            font-weight: normal; 
+            text-align: left; 
+            margin-top: -10px; 
+            margin-bottom: 28px; 
+            color: #191f28; 
+        }
+        .section { 
+            margin-bottom: 24px; 
+        }
+        label { 
+            display: block; 
+            font-weight: normal; 
+            margin-bottom: 10px; 
+            font-size: 16px; 
+            color: #333d4b; 
+        }
+        input { 
+            width: 100%; 
+            padding: 16px; 
+            box-sizing: border-box; 
+            background-color: #f2f4f6;
+            border: 1px solid transparent; 
+            border-radius: 14px; 
+            margin-bottom: 12px; 
+            font-size: 17px; 
+            font-family: 'Jua', sans-serif;
+            color: #191f28;
+            transition: all 0.2s;
+            outline: none;
+        }
+        input:focus { 
+            background-color: #ffffff;
+            border-color: #3182f6; 
+            box-shadow: 0 0 0 3px rgba(49, 130, 246, 0.15);
+        }
+        button { 
+            width: 100%; 
+            padding: 16px; 
+            background-color: #3182f6; 
+            color: white; 
+            border: none; 
+            border-radius: 14px; 
+            font-size: 18px; 
+            font-family: 'Jua', sans-serif;
+            cursor: pointer; 
+            transition: background-color 0.2s, transform 0.1s; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        button:active { transform: scale(0.98); }
+        button:hover { background-color: #1b64da; }
+        
+        .result-box { 
+            background: #e8f3ff; 
+            padding: 20px; 
+            border-radius: 16px; 
+            margin-top: 20px; 
+            display: none; 
+            text-align: center; 
+        }
+        .code-group {
+            background: #ffffff;
+            padding: 14px;
+            border-radius: 12px;
+            margin-top: 10px;
+            text-align: left;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+        .code-label { font-size: 14px; color: #8b95a1; }
+        .code-val { font-size: 20px; color: #3182f6; letter-spacing: 0.5px; margin-top: 4px; word-break: break-all; }
+        .error-msg { color: #f04438; font-size: 15px; text-align: center; margin-top: 8px; }
+        
+        /* 로딩 스피너 스타일 */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #ffffff;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .step-disabled {
+            opacity: 0.4;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>냥코 무료 통조림</h1>
+
+    <!-- 1단계: 세이브 불러오기 -->
+    <div class="section" id="step1">
+        <label>이어하기 코드 및 인증 번호</label>
+        <input type="text" id="transferCode" placeholder="이어하기 코드 입력">
+        <input type="text" id="confirmationCode" placeholder="인증 번호 입력">
+        <button id="loadBtn" onclick="loadSave()">
+            <span class="btn-text">세이브 불러오기</span>
+            <div class="spinner" id="loadSpinner"></div>
+        </button>
+        <div id="loadError" class="error-msg"></div>
+    </div>
+
+    <!-- 2단계: 통조림 수정 및 재발급 -->
+    <div class="section step-disabled" id="step2">
+        <label>원하는 통조림 개수</label>
+        <input type="number" id="catfoodInput" placeholder="예: 49999">
+        <button id="modBtn" onclick="modifyAndUpload()">
+            <span class="btn-text">모딩 후 새 코드 받기</span>
+            <div class="spinner" id="modSpinner"></div>
+        </button>
+        <div id="modError" class="error-msg"></div>
+    </div>
+
+    <!-- 결과 영역 -->
+    <div id="resultSection" class="result-box">
+        <div style="font-size: 18px; color: #1b64da; margin-bottom: 12px;">✨ 모딩 완료! 새 코드가 발급되었습니다</div>
+        
+        <div class="code-group">
+            <div class="code-label">이어하기 코드</div>
+            <div class="code-val" id="resTc">-</div>
+        </div>
+        
+        <div class="code-group" style="margin-top: 8px;">
+            <div class="code-label">인증 번호</div>
+            <div class="code-val" id="resCc">-</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function loadSave() {
+        const tc = document.getElementById('transferCode').value.trim();
+        const cc = document.getElementById('confirmationCode').value.trim();
+        const errDiv = document.getElementById('loadError');
+        const btnText = document.querySelector('#loadBtn .btn-text');
+        const spinner = document.getElementById('loadSpinner');
+        
+        errDiv.innerText = "";
+        if(!tc || !cc) {
+            errDiv.innerText = "코드를 모두 입력해주세요.";
+            return;
+        }
+
+        // 로딩 시작
+        btnText.style.display = 'none';
+        spinner.style.display = 'block';
+        document.getElementById('loadBtn').disabled = true;
+
+        const formData = new URLSearchParams();
+        formData.append('transfer_code', tc);
+        formData.append('confirmation_code', cc);
+
+        try {
+            const res = await fetch('/api/load_save', { method: 'POST', body: formData });
+            const data = await res.json();
+
+            if(data.success) {
+                document.getElementById('catfoodInput').value = data.catfood;
+                // 2단계 활성화
+                const step2 = document.getElementById('step2');
+                step2.classList.remove('step-disabled');
+                step2.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                errDiv.innerText = data.error;
+            }
+        } catch(e) {
+            errDiv.innerText = "서버 통신 중 오류가 발생했습니다.";
+        } finally {
+            // 로딩 종료
+            btnText.style.display = 'block';
+            spinner.style.display = 'none';
+            document.getElementById('loadBtn').disabled = false;
+        }
+    }
+
+    async function modifyAndUpload() {
+        const catfood = document.getElementById('catfoodInput').value;
+        const errDiv = document.getElementById('modError');
+        const btnText = document.querySelector('#modBtn .btn-text');
+        const spinner = document.getElementById('modSpinner');
+
+        errDiv.innerText = "";
+        if(!catfood) {
+            errDiv.innerText = "통조림 개수를 입력해주세요.";
+            return;
+        }
+
+        // 로딩 시작
+        btnText.style.display = 'none';
+        spinner.style.display = 'block';
+        document.getElementById('modBtn').disabled = true;
+
+        const formData = new URLSearchParams();
+        formData.append('catfood', catfood);
+
+        try {
+            const res = await fetch('/api/modify_and_upload', { method: 'POST', body: formData });
+            const data = await res.json();
+
+            if(data.success) {
+                document.getElementById('resTc').innerText = data.transfer_code;
+                document.getElementById('resCc').innerText = data.confirmation_code;
+                document.getElementById('resultSection').style.display = 'block';
+                document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+            } else {
+                errDiv.innerText = data.error;
+            }
+        } catch(e) {
+            errDiv.innerText = "서버 통신 중 오류가 발생했습니다.";
+        } finally {
+            // 로딩 종료
+            btnText.style.display = 'block';
+            spinner.style.display = 'none';
+            document.getElementById('modBtn').disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>
