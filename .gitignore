@@ -1,2 +1,23 @@
-venv/
+# Python 관련 캐시 및 가상환경
 __pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+ENV/
+
+# 환경변수 파일 (보안상 절대 업로드 금지)
+.env
+
+# SQLite3 데이터베이스 파일 (실제 운영 데이터)
+*.db
+
+# 유저 세이브 백업 및 임시 파일 폴더
+user_saves/
+
+# 운영체제 생성 임시 파일
+.DS_Store
+Thumbs.db
+
+firebase_cred.jsonfirebase_cred.json
+firebase_cred.json

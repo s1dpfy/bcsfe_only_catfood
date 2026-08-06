@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>냥코 무료 통조림</title>
+    <title>냥코 무료 재화 모딩</title>
     <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -15,7 +15,7 @@
             padding: 24px 16px; 
             display: flex; 
             justify-content: center; 
-            align-items: flex-start; /* 중앙 정렬에서 상단 정렬로 변경하여 키보드 올라올 때 대응 */
+            align-items: flex-start;
             min-height: 100vh;
         }
         .container { 
@@ -28,7 +28,6 @@
             margin-bottom: 40px;
         }
         
-        /* 제목 그래디언트 */
         h2 { 
             font-size: 42px; 
             font-weight: normal; 
@@ -40,7 +39,6 @@
             -webkit-text-fill-color: transparent;
         }
         
-        /* 제작자 이름 그래디언트 */
         .author {
             font-size: 25px;
             margin-bottom: 16px; 
@@ -52,7 +50,6 @@
         
         .section { margin-bottom: 14px; }
         
-        /* 라벨 그래디언트 & 크기 확대 */
         label { 
             display: block; 
             font-weight: normal; 
@@ -70,16 +67,14 @@
             background-color: #f2f4f6;
             border: 1px solid transparent; 
             border-radius: 12px; 
-            margin-bottom: 8px; 
+            margin-bottom: 12px; 
             font-size: 22px; 
             font-family: 'Jua', sans-serif;
             color: #191f28;
             transition: all 0.2s;
             outline: none;
         }
-        input::placeholder {
-            font-size: 17px;
-        }
+        input::placeholder { font-size: 17px; }
         input:focus { 
             background-color: #ffffff;
             border-color: #3182f6; 
@@ -157,7 +152,7 @@
 <body>
 
 <div class="container">
-    <h2>냥코 무료 통조림</h2>
+    <h2>냥코 무료 재화</h2>
     <div class="author">제작자 냥슬리</div>
 
     <div class="section" id="step1">
@@ -172,7 +167,11 @@
 
     <div class="section step-disabled" id="step2">
         <label>원하는 통조림 개수</label>
-        <input type="number" id="catfoodInput" placeholder="예: 49999">
+        <input type="number" id="catfoodInput" placeholder="최대 45000">
+        
+        <label>원하는 XP</label>
+        <input type="number" id="xpInput" placeholder="최대 99999999">
+
         <button id="modBtn" onclick="modifyAndUpload()">
             <span class="btn-text">모딩 후 새 코드 받기</span>
             <div class="spinner" id="modSpinner"></div>
@@ -222,7 +221,10 @@
             if(data.success) {
                 sessionStorage.setItem('session_token', data.token);
                 
+                // 통조림과 XP 초기값 설정
                 document.getElementById('catfoodInput').value = data.catfood;
+                document.getElementById('xpInput').value = data.xp;
+
                 const step2 = document.getElementById('step2');
                 step2.classList.remove('step-disabled');
                 step2.scrollIntoView({ behavior: 'smooth' });
@@ -240,6 +242,7 @@
 
     async function modifyAndUpload() {
         const catfood = document.getElementById('catfoodInput').value;
+        const xp = document.getElementById('xpInput').value;
         const errDiv = document.getElementById('modError');
         const btnText = document.querySelector('#modBtn .btn-text');
         const spinner = document.getElementById('modSpinner');
@@ -250,8 +253,9 @@
             errDiv.innerText = "세션이 만료되었습니다. 페이지를 새로고침 후 다시 시도해주세요.";
             return;
         }
-        if(!catfood) {
-            errDiv.innerText = "통조림 개수를 입력해주세요.";
+        // 통조림과 XP 빈값 체크
+        if(!catfood || !xp) {
+            errDiv.innerText = "통조림 개수와 XP를 모두 입력해주세요.";
             return;
         }
 
@@ -261,6 +265,7 @@
 
         const formData = new URLSearchParams();
         formData.append('catfood', catfood);
+        formData.append('xp', xp); // 서버로 XP 데이터 전송
 
         try {
             const res = await fetch('/api/modify_and_upload', { 

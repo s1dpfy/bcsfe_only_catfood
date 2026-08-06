@@ -57,11 +57,13 @@ async def load_save(transfer_code: str = Form(...), confirmation_code: str = For
             
             summary = service.summary()
             current_catfood = summary.get("current", {}).get("catfood", 0)
+            current_xp = summary.get("current", {}).get("xp", 0) # XP 추가
             
             return {
                 "success": True, 
                 "token": token, 
-                "catfood": current_catfood
+                "catfood": current_catfood,
+                "xp": current_xp # 프론트로 XP 전송
             }
         else:
             return {"success": False, "error": "이어하기 코드 또는 인증 번호가 올바르지 않습니다."}
@@ -69,13 +71,14 @@ async def load_save(transfer_code: str = Form(...), confirmation_code: str = For
         return {"success": False, "error": str(e)}
 
 @app.post("/api/modify_and_upload")
-async def modify_and_upload(catfood: int = Form(...), x_session_token: str = Header(None)):
+async def modify_and_upload(catfood: int = Form(...), xp: int = Form(...), x_session_token: str = Header(None)):
     try:
         # 본인만의 세션에 해당하는 서비스 객체 가져오기
         service = get_user_service(x_session_token)
         
-        # 1. 통조림 수정 적용
+        # 1. 통조림 및 XP 수정 적용
         service.set_catfood(catfood)
+        service.set_xp(xp) # XP 적용 로직 추가
         
         # 2. 서버에 업로드하여 새로운 이어하기 코드 발급
         new_tc, new_cc = service.upload()
