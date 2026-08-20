@@ -11,19 +11,26 @@ from bcsfe_service import BCSFEService
 app = FastAPI(title="Simple BCSFE Web with Sessions")
 templates = Jinja2Templates(directory="templates")
 
-# 사용자별 세션을 저장하는 딕셔너리 { token: {"service": 객체, "last_active": 시간} }
 SESSIONS = {}
-SESSION_TIMEOUT = 1800  # 30분 동안 활동이 없으면 세션 자동 삭제
+SESSION_TIMEOUT = 1800 
 
-# 백그라운드에서 만료된 세션을 주기적으로 청소하는 태스크
+# ==========================================
+# 💰 추가된 모금함(서버 유지비) 전역 상태 변수
+# ==========================================
+FUND_CURRENT = 0
+FUND_TARGET = 50000
+ADMIN_PASSWORD = "boji"
+
+def is_site_unlocked():
+    return FUND_CURRENT >= FUND_TARGET
+
+# ==========================================
+
 async def session_cleanup_task():
     while True:
         await asyncio.sleep(60)
         current_time = time.time()
-        expired_tokens = [
-            tok for tok, data in SESSIONS.items() 
-            if current_time - data["last_active"] > SESSION_TIMEOUT
-        ]
+        expired_tokens = [tok for tok, data in SESSIONS.items() if current_time - data["last_active"] > SESSION_TIMEOUT]
         for tok in expired_tokens:
             del SESSIONS[tok]
 
@@ -31,39 +38,72 @@ async def session_cleanup_task():
 async def startup_event():
     asyncio.create_task(session_cleanup_task())
 
-# 세션 토큰을 검증하고 서비스를 가져오는 함수
 def get_user_service(x_session_token: str = Header(None)) -> BCSFEService:
     if not x_session_token or x_session_token not in SESSIONS:
-        raise HTTPException(status_code=401, detail="세션이 만료되었거나 유효하지 않습니다. 다시 세이브를 불러와주세요.")
-    # 활동 시간 갱신
+        raise HTTPException(status_code=401, detail="세션이 만료되었거나 유효하지 않습니다.")
     SESSIONS[x_session_token]["last_active"] = time.time()
     return SESSIONS[x_session_token]["service"]
 
+# --- 🌐 페이지 라우터 ---
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse(request=request, name="index.html")
 
+# 관리자 페이지 추가
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_page(request: Request):
+    return templates.TemplateResponse(request=request, name="admin.html")
+
+# --- 📊 모금 관련 API ---
+@app.get("/api/fund_status")
+async def fund_status():
+    return {
+        "current": FUND_CURRENT,
+        "target": FUND_TARGET,
+        "unlocked": is_site_unlocked()
+    }
+
+@app.post("/api/admin/update")
+async def admin_update(
+    password: str = Form(...),
+    target: int = Form(None),
+    add_amount: int = Form(None)
+):
+    global FUND_CURRENT, FUND_TARGET
+    
+    # 🔒 보안: 비밀번호 체크
+    if password != ADMIN_PASSWORD:
+        return {"success": False, "error": "비밀번호가 올바르지 않습니다."}
+    
+    if target is not None:
+        FUND_TARGET = target
+    if add_amount is not None:
+        FUND_CURRENT += add_amount
+        
+    return {
+        "success": True, 
+        "current": FUND_CURRENT, 
+        "target": FUND_TARGET, 
+        "unlocked": is_site_unlocked()
+    }
+
+# --- 🛠️ 기존 기능 (보안 락 추가됨) ---
 @app.post("/api/load_save")
 async def load_save(transfer_code: str = Form(...), confirmation_code: str = Form(...)):
+    if not is_site_unlocked():
+        return {"success": False, "error": "🚨 모금 목표액이 달성되지 않아 서버가 잠겨있습니다."}
+
     try:
         service = BCSFEService()
         if service.download(transfer_code.strip(), confirmation_code.strip()):
-            # 새로운 고유 세션 토큰 발급
             token = secrets.token_hex(16)
-            SESSIONS[token] = {
-                "service": service,
-                "last_active": time.time()
-            }
-            
+            SESSIONS[token] = {"service": service, "last_active": time.time()}
             summary = service.summary()
-            current_catfood = summary.get("current", {}).get("catfood", 0)
-            current_xp = summary.get("current", {}).get("xp", 0) # XP 추가
-            
             return {
                 "success": True, 
                 "token": token, 
-                "catfood": current_catfood,
-                "xp": current_xp # 프론트로 XP 전송
+                "catfood": summary.get("current", {}).get("catfood", 0),
+                "xp": summary.get("current", {}).get("xp", 0)
             }
         else:
             return {"success": False, "error": "이어하기 코드 또는 인증 번호가 올바르지 않습니다."}
@@ -72,22 +112,16 @@ async def load_save(transfer_code: str = Form(...), confirmation_code: str = For
 
 @app.post("/api/modify_and_upload")
 async def modify_and_upload(catfood: int = Form(...), xp: int = Form(...), x_session_token: str = Header(None)):
+    if not is_site_unlocked():
+        return {"success": False, "error": "🚨 모금 목표액이 달성되지 않아 서버가 잠겨있습니다."}
+
     try:
-        # 본인만의 세션에 해당하는 서비스 객체 가져오기
         service = get_user_service(x_session_token)
-        
-        # 1. 통조림 및 XP 수정 적용
         service.set_catfood(catfood)
-        service.set_xp(xp) # XP 적용 로직 추가
-        
-        # 2. 서버에 업로드하여 새로운 이어하기 코드 발급
+        service.set_xp(xp)
         new_tc, new_cc = service.upload()
         
-        return {
-            "success": True,
-            "transfer_code": new_tc,
-            "confirmation_code": new_cc
-        }
+        return {"success": True, "transfer_code": new_tc, "confirmation_code": new_cc}
     except HTTPException as he:
         return {"success": False, "error": he.detail}
     except Exception as e:
