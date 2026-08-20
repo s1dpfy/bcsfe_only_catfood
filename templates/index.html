@@ -47,6 +47,50 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+
+        .fund-card {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+        }
+
+        .fund-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .fund-title { font-size: 18px; color: #333d4b; }
+        .fund-status { font-weight: bold; }
+        .status-unlocked { color: #3182f6; }
+        .status-locked { color: #ff1100; }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 12px;
+            background-color: #e5e8eb;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3182f6 0%, #1b64da 100%);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .fund-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #6b7684;
+        }
         
         .section { margin-bottom: 14px; }
         
@@ -94,12 +138,13 @@
             transition: transform 0.1s, filter 0.2s; 
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             gap: 8px;
             box-shadow: 0 4px 12px rgba(49, 130, 246, 0.3);
         }
         button:active { transform: scale(0.98); }
         button:hover { filter: brightness(1.05); }
+        button:disabled { background: #b0b8c1; cursor: not-allowed; box-shadow: none; }
         
         .result-box { 
             background: linear-gradient(135deg, #e8f3ff 0%, #d4e8ff 100%); 
@@ -155,6 +200,20 @@
     <h2>냥코 무료 재화</h2>
     <div class="author">제작자 냥슬리</div>
 
+    <div class="fund-card">
+        <div class="fund-header">
+            <span class="fund-title">서버 유지비 모금함</span>
+            <span id="fundStatusText" class="fund-status status-locked">잠김</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div id="fundProgressBar" class="progress-bar-fill"></div>
+        </div>
+        <div class="fund-info">
+            <span id="fundAmountText">0 / 0원</span>
+            <span id="fundPercentText">0%</span>
+        </div>
+    </div>
+
     <div class="section" id="step1">
         <input type="text" id="transferCode" placeholder="이어하기 코드 입력">
         <input type="text" id="confirmationCode" placeholder="인증 번호 입력">
@@ -193,6 +252,36 @@
 </div>
 
 <script>
+    async function checkFundStatus() {
+        try {
+            const res = await fetch('/api/fund_status');
+            const data = await res.json();
+            
+            const current = data.current || 0;
+            const target = data.target || 1;
+            const percentage = Math.min(Math.floor((current / target) * 100), 100);
+            
+            document.getElementById('fundAmountText').innerText = `${current.toLocaleString()} / ${target.toLocaleString()}원`;
+            document.getElementById('fundPercentText').innerText = `${percentage}%`;
+            document.getElementById('fundProgressBar').style.width = `${percentage}%`;
+
+            const statusText = document.getElementById('fundStatusText');
+            const loadBtn = document.getElementById('loadBtn');
+
+            if(data.unlocked) {
+                statusText.innerText = "이용 가능";
+                statusText.className = "fund-status status-unlocked";
+                loadBtn.disabled = false;
+            } else {
+                statusText.innerText = "목표 미달성 (잠김)";
+                statusText.className = "fund-status status-locked";
+                loadBtn.disabled = true;
+            }
+        } catch(e) {
+            console.error("모금 현황 로드 실패", e);
+        }
+    }
+
     async function loadSave() {
         const tc = document.getElementById('transferCode').value.trim();
         const cc = document.getElementById('confirmationCode').value.trim();
@@ -221,7 +310,6 @@
             if(data.success) {
                 sessionStorage.setItem('session_token', data.token);
                 
-                // 통조림과 XP 초기값 설정
                 document.getElementById('catfoodInput').value = data.catfood;
                 document.getElementById('xpInput').value = data.xp;
 
@@ -253,7 +341,6 @@
             errDiv.innerText = "세션이 만료되었습니다. 페이지를 새로고침 후 다시 시도해주세요.";
             return;
         }
-        // 통조림과 XP 빈값 체크
         if(!catfood || !xp) {
             errDiv.innerText = "통조림 개수와 XP를 모두 입력해주세요.";
             return;
@@ -265,7 +352,7 @@
 
         const formData = new URLSearchParams();
         formData.append('catfood', catfood);
-        formData.append('xp', xp); // 서버로 XP 데이터 전송
+        formData.append('xp', xp);
 
         try {
             const res = await fetch('/api/modify_and_upload', { 
@@ -291,6 +378,8 @@
             document.getElementById('modBtn').disabled = false;
         }
     }
+
+    window.addEventListener('DOMContentLoaded', checkFundStatus);
 </script>
 
 </body>
