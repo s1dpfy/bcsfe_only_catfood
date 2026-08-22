@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Form, Header, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 import uvicorn
 import secrets
@@ -62,6 +62,11 @@ async def fund_status():
         "target": FUND_TARGET,
         "unlocked": is_site_unlocked()
     }
+
+@app.get("/sw.js")
+async def serve_sw():
+    # sw.js 파일이 main.py와 같은 폴더에 있어야 합니다.
+    return FileResponse("sw.js", media_type="application/javascript")
 
 @app.post("/api/admin/update")
 async def admin_update(
