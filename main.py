@@ -12,19 +12,8 @@ app = FastAPI(title="Simple BCSFE Web with Sessions")
 templates = Jinja2Templates(directory="templates")
 
 SESSIONS = {}
-SESSION_TIMEOUT = 1800 
-
-# ==========================================
-# 💰 추가된 모금함(서버 유지비) 전역 상태 변수
-# ==========================================
-FUND_CURRENT = 0
-FUND_TARGET = 50000
-ADMIN_PASSWORD = "boji"
-
-def is_site_unlocked():
-    return FUND_CURRENT >= FUND_TARGET
-
-# ==========================================
+# 💡 서버 메모리 최적화를 위해 세션 유지 시간을 30분에서 5분으로 단축
+SESSION_TIMEOUT = 300 
 
 async def session_cleanup_task():
     while True:
@@ -49,55 +38,19 @@ def get_user_service(x_session_token: str = Header(None)) -> BCSFEService:
 async def index(request: Request):
     return templates.TemplateResponse(request=request, name="index.html")
 
-# 관리자 페이지 추가
+# 💡 광고 네트워크용 Service Worker 파일 지원
+@app.get("/sw.js")
+async def serve_sw():
+    # sw.js 파일이 main.py와 같은 최상단 폴더에 있어야 합니다.
+    return FileResponse("sw.js", media_type="application/javascript")
+
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_page(request: Request):
     return templates.TemplateResponse(request=request, name="admin.html")
 
-# --- 📊 모금 관련 API ---
-@app.get("/api/fund_status")
-async def fund_status():
-    return {
-        "current": FUND_CURRENT,
-        "target": FUND_TARGET,
-        "unlocked": is_site_unlocked()
-    }
-
-@app.get("/sw.js")
-async def serve_sw():
-    # sw.js 파일이 main.py와 같은 폴더에 있어야 합니다.
-    return FileResponse("sw.js", media_type="application/javascript")
-
-@app.post("/api/admin/update")
-async def admin_update(
-    password: str = Form(...),
-    target: int = Form(None),
-    add_amount: int = Form(None)
-):
-    global FUND_CURRENT, FUND_TARGET
-    
-    # 🔒 보안: 비밀번호 체크
-    if password != ADMIN_PASSWORD:
-        return {"success": False, "error": "비밀번호가 올바르지 않습니다."}
-    
-    if target is not None:
-        FUND_TARGET = target
-    if add_amount is not None:
-        FUND_CURRENT += add_amount
-        
-    return {
-        "success": True, 
-        "current": FUND_CURRENT, 
-        "target": FUND_TARGET, 
-        "unlocked": is_site_unlocked()
-    }
-
-# --- 🛠️ 기존 기능 (보안 락 추가됨) ---
+# --- 🛠️ 코어 API (비동기 병목 현상 해결을 위해 async 키워드 제거) ---
 @app.post("/api/load_save")
-async def load_save(transfer_code: str = Form(...), confirmation_code: str = Form(...)):
-    if not is_site_unlocked():
-        return {"success": False, "error": "🚨 모금 목표액이 달성되지 않아 서버가 잠겨있습니다."}
-
+def load_save(transfer_code: str = Form(...), confirmation_code: str = Form(...)):
     try:
         service = BCSFEService()
         if service.download(transfer_code.strip(), confirmation_code.strip()):
@@ -116,10 +69,7 @@ async def load_save(transfer_code: str = Form(...), confirmation_code: str = For
         return {"success": False, "error": str(e)}
 
 @app.post("/api/modify_and_upload")
-async def modify_and_upload(catfood: int = Form(...), xp: int = Form(...), x_session_token: str = Header(None)):
-    if not is_site_unlocked():
-        return {"success": False, "error": "🚨 모금 목표액이 달성되지 않아 서버가 잠겨있습니다."}
-
+def modify_and_upload(catfood: int = Form(...), xp: int = Form(...), x_session_token: str = Header(None)):
     try:
         service = get_user_service(x_session_token)
         service.set_catfood(catfood)
@@ -133,4 +83,5 @@ async def modify_and_upload(catfood: int = Form(...), xp: int = Form(...), x_ses
         return {"success": False, "error": str(e)}
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=5000, reload=True)
+    # 💡 CPU 리소스 확보를 위해 개발자 모드(reload) 끄기
+    uvicorn.run("main:app", host="0.0.0.0", port=5000, reload=False)

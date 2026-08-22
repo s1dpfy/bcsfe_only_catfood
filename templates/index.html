@@ -41,55 +41,11 @@
         
         .author {
             font-size: 25px;
-            margin-bottom: 16px; 
+            margin-bottom: 24px; 
             text-align: left;
             background: linear-gradient(135deg, #000000, #0004ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-        }
-
-        .fund-card {
-            background: #f8f9fa;
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 20px;
-            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
-        }
-
-        .fund-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-
-        .fund-title { font-size: 18px; color: #333d4b; }
-        .fund-status { font-weight: bold; }
-        .status-unlocked { color: #3182f6; }
-        .status-locked { color: #ff1100; }
-
-        .progress-bar-bg {
-            width: 100%;
-            height: 12px;
-            background-color: #e5e8eb;
-            border-radius: 6px;
-            overflow: hidden;
-            margin-bottom: 8px;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #3182f6 0%, #1b64da 100%);
-            width: 0%;
-            transition: width 0.4s ease;
-        }
-
-        .fund-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            color: #6b7684;
         }
         
         .section { margin-bottom: 14px; }
@@ -200,20 +156,6 @@
     <h2>냥코 무료 재화</h2>
     <div class="author">제작자 냥슬리</div>
 
-    <div class="fund-card">
-        <div class="fund-header">
-            <span class="fund-title">서버 유지비 모금함</span>
-            <span id="fundStatusText" class="fund-status status-locked">잠김</span>
-        </div>
-        <div class="progress-bar-bg">
-            <div id="fundProgressBar" class="progress-bar-fill"></div>
-        </div>
-        <div class="fund-info">
-            <span id="fundAmountText">0 / 0원</span>
-            <span id="fundPercentText">0%</span>
-        </div>
-    </div>
-
     <div class="section" id="step1">
         <input type="text" id="transferCode" placeholder="이어하기 코드 입력">
         <input type="text" id="confirmationCode" placeholder="인증 번호 입력">
@@ -252,34 +194,12 @@
 </div>
 
 <script>
-    async function checkFundStatus() {
-        try {
-            const res = await fetch('/api/fund_status');
-            const data = await res.json();
-            
-            const current = data.current || 0;
-            const target = data.target || 1;
-            const percentage = Math.min(Math.floor((current / target) * 100), 100);
-            
-            document.getElementById('fundAmountText').innerText = `${current.toLocaleString()} / ${target.toLocaleString()}원`;
-            document.getElementById('fundPercentText').innerText = `${percentage}%`;
-            document.getElementById('fundProgressBar').style.width = `${percentage}%`;
-
-            const statusText = document.getElementById('fundStatusText');
-            const loadBtn = document.getElementById('loadBtn');
-
-            if(data.unlocked) {
-                statusText.innerText = "이용 가능";
-                statusText.className = "fund-status status-unlocked";
-                loadBtn.disabled = false;
-            } else {
-                statusText.innerText = "목표 미달성 (잠김)";
-                statusText.className = "fund-status status-locked";
-                loadBtn.disabled = true;
-            }
-        } catch(e) {
-            console.error("모금 현황 로드 실패", e);
-        }
+    // 💡 비네트 배너 광고 호출 함수
+    function showVignetteAd() {
+        const s = document.createElement('script');
+        s.dataset.zone = '11629814';
+        s.src = 'https://n6wxm.com/vignette.min.js';
+        document.body.appendChild(s);
     }
 
     async function loadSave() {
@@ -329,6 +249,9 @@
     }
 
     async function modifyAndUpload() {
+        // 💡 2. 모딩 후 새 코드 받기 버튼 누를 때 광고 호출
+        showVignetteAd();
+
         const catfood = document.getElementById('catfoodInput').value;
         const xp = document.getElementById('xpInput').value;
         const errDiv = document.getElementById('modError');
@@ -379,8 +302,11 @@
         }
     }
 
-    window.addEventListener('DOMContentLoaded', checkFundStatus);
+    window.addEventListener('DOMContentLoaded', () => {
+        // 💡 1. 사이트 처음 접속했을 때 광고 호출
+        showVignetteAd();
+    });
 </script>
 
 </body>
-</html>
+</html> 
