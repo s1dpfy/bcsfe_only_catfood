@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>개발자 포트폴리오 | OOO (Space Explorer)</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    
+    <style>
+        /* ================= BASE & UI ================= */
+        :root {
+            --primary: #ffffff;
+            --muted: #94a3b8;
+            --glass-bg: rgba(9, 9, 11, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            font-family: 'Pretendard', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        
+        body, html { 
+            width: 100%; height: 100%; 
+            background-color: #000; color: var(--primary); 
+            overflow: hidden; touch-action: none; 
+        }
+
+        #webgl-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
+        /* ================= OVERLAYS ================= */
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
+
+        /* 시작 화면 (포인터 락 안내) */
+        #start-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; pointer-events: auto; transition: opacity 0.5s;
+        }
+        #start-screen h1 { font-size: 3rem; font-weight: 800; margin-bottom: 1rem; letter-spacing: -1px; text-align: center; }
+        #start-screen p { font-size: 1.2rem; color: var(--muted); margin-bottom: 2rem; text-align: center; line-height: 1.6; }
+        .start-btn { 
+            padding: 15px 40px; font-size: 1.2rem; font-weight: 700; color: #000; background: #fff; 
+            border: none; border-radius: 4px; cursor: pointer; transition: transform 0.2s; 
+        }
+        .start-btn:hover { transform: scale(1.05); }
+
+        /* 조준점 (Crosshair) */
+        .crosshair {
+            position: absolute; top: 50%; left: 50%; width: 6px; height: 6px;
+            background: rgba(255,255,255,0.5); border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* 궤도 안내 미니맵 텍스트 */
+        .radar-text { position: absolute; top: 20px; left: 20px; font-size: 0.9rem; color: var(--muted); font-family: monospace; }
+        .controls-hint { position: absolute; top: 20px; right: 20px; font-size: 0.9rem; color: var(--muted); text-align: right; }
+
+        /* ================= HUD PANELS (홀로그램 팝업) ================= */
+        .hud-panel {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
+            width: 90%; max-width: 600px;
+            background: var(--glass-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border); border-radius: 12px; padding: 3rem;
+            opacity: 0; pointer-events: none; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .hud-panel.active { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+
+        .hud-panel h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; letter-spacing: -1px; }
+        .hud-panel p { font-size: 1.1rem; color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem; }
+        .hud-panel strong { color: #fff; font-weight: 600; }
+        
+        .btn-link {
+            display: inline-block; padding: 10px 24px; margin-right: 10px; margin-top: 10px;
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            color: #fff; text-decoration: none; border-radius: 4px; transition: all 0.2s;
+        }
+        .btn-link:hover { background: #fff; color: #000; }
+
+        .project-item { margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .project-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .project-item h3 { font-size: 1.4rem; margin-bottom: 0.5rem; }
+        .tags { display: flex; gap: 0.5rem; margin-top: 0.8rem; }
+        .tag { font-size: 0.8rem; padding: 4px 10px; border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+
+        /* ================= MOBILE JOYSTICK ================= */
+        #joystick-zone {
+            display: none; position: absolute; bottom: 30px; left: 30px;
+            width: 120px; height: 120px; background: rgba(255,255,255,0.1);
+            border-radius: 50%; border: 2px solid rgba(255,255,255,0.2);
+            pointer-events: auto; touch-action: none; z-index: 50;
+        }
+        #joystick-knob {
+            position: absolute; top: 50%; left: 50%; width: 50px; height: 50px;
+            background: rgba(255,255,255,0.5); border-radius: 50%;
+            transform: translate(-50%, -50%); pointer-events: none;
+        }
+
+        /* 모바일용 시점 전환(Look) 드래그 영역 */
+        #touch-look-zone {
+            display: none; position: absolute; top: 0; right: 0;
+            width: 50vw; height: 100vh; z-index: 40; pointer-events: auto; touch-action: none;
+        }
+
+        @media (max-width: 768px) {
+            #start-screen h1 { font-size: 2rem; }
+            #start-screen p { font-size: 1rem; }
+            .hud-panel { width: 95%; padding: 2rem 1.5rem; }
+            .hud-panel h2 { font-size: 2rem; }
+            .hud-panel p { font-size: 1rem; }
+            .controls-hint { display: none; }
+            /* 모바일 컨트롤 활성화 */
+            #joystick-zone { display: block; }
+            #touch-look-zone { display: block; }
+        }
+    </style>
+
+    <!-- Three.js Import -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <canvas id="webgl-canvas"></canvas>
+
+    <!-- 시작 화면 -->
+    <div id="start-screen">
+        <h1>PORTFOLIO UNIVERSE</h1>
+        <p id="start-desc">
+            [ PC 환경 ]<br>클릭하여 우주선에 탑승하세요.<br>마우스로 시점을 돌리고, <strong>W, A, S, D</strong>로 이동합니다.<br>(클릭 해제는 ESC)
+        </p>
+        <button class="start-btn" id="start-btn">탐험 시작</button>
+    </div>
+
+    <!-- UI 레이어 (크로스헤어, 상태창 등) -->
+    <div id="ui-layer">
+        <div class="crosshair"></div>
+        <div class="radar-text" id="coord-display">X: 000 | Z: 000<br>Status: Exploring</div>
+        <div class="controls-hint">이동: WASD<br>시점: 마우스<br>선택/해제: ESC</div>
+
+        <!-- 각 구역(Zone) 도달 시 나타나는 HUD 패널들 -->
+        <div class="hud-panel" id="hud-home">
+            <h2>개발자 OOO</h2>
+            <p><strong>우주를 유영하듯 자유로운 탐색을 환영합니다.</strong><br>단단한 백엔드 아키텍처부터 직관적인 UI까지, 본질에 집중하는 개발자입니다.</p>
+            <p>주변에 떠 있는 기하학적 구조물(구역)들로 이동하여 저에 대해 더 알아보세요.</p>
+            <a href="https://github.com" target="_blank" class="btn-link">GitHub</a>
+            <a href="mailto:email@domain.com" class="btn-link">Contact</a>
+        </div>
+
+        <div class="hud-panel" id="hud-about">
+            <h2>철학과 비전</h2>
+            <p>단순히 코드를 작성하는 것을 넘어, <strong>'왜 이 기술을 사용해야 하는가?'</strong>에 대해 끊임없이 질문합니다.</p>
+            <p>시스템의 근간을 이해하기 위해 C를 탐구하고, 생산성을 높이기 위해 Python과 Ruby를 활용하며, 데이터가 유저에게 직관적으로 전달되도록 돕습니다.</p>
+            <p>임시방편의 우회로보다는 문제의 근본 원인을 찾아 해결하는 끈질긴 디버깅을 즐깁니다.</p>
+        </div>
+
+        <div class="hud-panel" id="hud-skills">
+            <h2>기술 스택 (Core Skills)</h2>
+            <p>주변에 흩어져 있는 3D 큐브들은 제가 주로 다루는 무기들입니다.</p>
+            <p>
+                <strong>Python / FastAPI:</strong> 비동기 기반 고성능 API 설계<br>
+                <strong>PostgreSQL:</strong> RDBMS 설계 및 쿼리 최적화<br>
+                <strong>C / Ruby:</strong> 시스템 메모리 관리부터 빠른 프로토타이핑까지<br>
+                <strong>JavaScript:</strong> 동적인 웹 프론트엔드 인터랙션 (Three.js 등)
+            </p>
+        </div>
+
+        <div class="hud-panel" id="hud-projects">
+            <h2>주요 프로젝트</h2>
+            <div class="project-item">
+                <h3>고성능 실시간 데이터 API 서버</h3>
+                <p>대규모 트래픽 환경에서 안정적으로 동작하는 백엔드를 설계하여 응답 속도를 40% 단축.</p>
+                <div class="tags"><span class="tag">FastAPI</span><span class="tag">PostgreSQL</span></div>
+            </div>
+            <div class="project-item">
+                <h3>인터랙티브 웹 대시보드</h3>
+                <p>복잡한 집계 데이터를 JavaScript 기반의 동적 차트와 UI로 풀어내어 데이터 가독성을 크게 향상.</p>
+                <div class="tags"><span class="tag">JavaScript</span><span class="tag">Ruby</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 모바일 전용 컨트롤러 UI -->
+    <div id="joystick-zone"><div id="joystick-knob"></div></div>
+    <div id="touch-look-zone"></div>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        /* ================= 전역 변수 및 설정 ================= */
+        const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        
+        let scene, camera, renderer;
+        let prevTime = performance.now();
+
+        // 카메라 및 이동 제어 변수
+        const velocity = new THREE.Vector3();
+        const direction = new THREE.Vector3();
+        const speedMultiplier = isMobile ? 40.0 : 60.0; // 이동 속도
+        
+        let moveForward = false;
+        let moveBackward = false;
+        let moveLeft = false;
+        let moveRight = false;
+        
+        // 카메라 시점 (FPS를 위해 YXZ 순서 중요)
+        let pitch = 0; // 상하 회전 (X축)
+        let yaw = 0;   // 좌우 회전 (Y축)
+
+        // 구역(Zone) 데이터 정의: 이 좌표 근처에 가면 해당 HUD가 뜹니다.
+        const zones = [
+            { id: 'hud-home', pos: new THREE.Vector3(0, 0, 0), radius: 15 },
+            { id: 'hud-about', pos: new THREE.Vector3(0, 0, -60), radius: 20 },
+            { id: 'hud-skills', pos: new THREE.Vector3(-50, 0, -30), radius: 20 },
+            { id: 'hud-projects', pos: new THREE.Vector3(50, 0, -30), radius: 20 }
+        ];
+
+        let activeHud = null;
+
+        /* ================= 초기화 ================= */
+        function init() {
+            const canvas = document.getElementById('webgl-canvas');
+            
+            // 씬 세팅
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x000000, 0.015); // 우주의 깊이감
+
+            // 카메라 세팅 (1인칭)
+            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.rotation.order = 'YXZ'; // FPS 카메라의 필수 설정
+            camera.position.set(0, 0, 20); // 시작 지점을 살짝 뒤로 배치
+
+            // 렌더러 세팅
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            // 조명
+            scene.add(new THREE.AmbientLight(0x222222));
+            const pointLight = new THREE.PointLight(0xffffff, 2, 100);
+            camera.add(pointLight); // 손전등처럼 카메라를 따라다니는 조명
+            scene.add(camera);
+
+            // 우주 환경 및 구역 생성
+            buildUniverse();
+            buildZones();
+
+            // 이벤트 리스너 등록
+            window.addEventListener('resize', onWindowResize);
+            
+            if (isMobile) {
+                document.getElementById('start-desc').innerHTML = "[ 모바일 환경 ]<br>왼쪽 조이스틱으로 이동하고,<br>오른쪽 화면을 문질러 시점을 돌리세요.";
+                setupMobileControls();
+            } else {
+                setupPCControls();
+            }
+
+            // 시작 버튼
+            document.getElementById('start-btn').addEventListener('click', () => {
+                document.getElementById('start-screen').style.opacity = '0';
+                setTimeout(() => document.getElementById('start-screen').style.display = 'none', 500);
+                
+                if(!isMobile) {
+                    document.body.requestPointerLock();
+                }
+            });
+
+            animate();
+        }
+
+        /* ================= 환경 및 오브젝트 생성 ================= */
+        function buildUniverse() {
+            // 거대한 별(파티클) 필드 생성
+            const geom = new THREE.BufferGeometry();
+            const count = isMobile ? 3000 : 8000;
+            const pos = new Float32Array(count * 3);
+            for(let i=0; i<count*3; i++) {
+                pos[i] = (Math.random() - 0.5) * 300;
+            }
+            geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            const mat = new THREE.PointsMaterial({ color: 0xaaaaaa, size: 0.15, transparent: true, opacity: 0.8 });
+            scene.add(new THREE.Points(geom, mat));
+        }
+
+        // 특정 좌표에 구역 랜드마크 3D 오브젝트 배치
+        function buildZones() {
+            // 1. Home (중앙 코어)
+            const geomHome = new THREE.IcosahedronGeometry(4, 1);
+            const matHome = new THREE.MeshBasicMaterial({ color: 0x333333, wireframe: true });
+            const meshHome = new THREE.Mesh(geomHome, matHome);
+            meshHome.position.copy(zones[0].pos);
+            scene.add(meshHome);
+            meshHome.userData = { animate: (t) => { meshHome.rotation.y = t; meshHome.rotation.x = t*0.5; } };
+
+            // 2. About (회전하는 링 구조물)
+            const groupAbout = new THREE.Group();
+            const matAbout = new THREE.MeshStandardMaterial({ color: 0x555555, metalness: 0.8, roughness: 0.2 });
+            for(let i=0; i<3; i++) {
+                const ring = new THREE.Mesh(new THREE.TorusGeometry(5 + i, 0.1, 16, 100), matAbout);
+                ring.rotation.x = Math.random() * Math.PI;
+                ring.userData = { speed: Math.random() * 0.02, axis: new THREE.Vector3(Math.random(), Math.random(), 0).normalize() };
+                groupAbout.add(ring);
+            }
+            groupAbout.position.copy(zones[1].pos);
+            scene.add(groupAbout);
+            groupAbout.userData = { 
+                animate: () => { groupAbout.children.forEach(r => r.rotateOnAxis(r.userData.axis, r.userData.speed)); }
+            };
+
+            // 3. Skills (스킬 로고 큐브 군집)
+            const groupSkills = new THREE.Group();
+            const skills = [
+                { url: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg', hex: '#3776AB', pos: [-5,3,0] },
+                { url: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/c/c-original.svg', hex: '#A8B9CC', pos: [0,5,-2] },
+                { url: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/fastapi/fastapi-original.svg', hex: '#009688', pos: [5,2,2] },
+                { url: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/postgresql/postgresql-original.svg', hex: '#4169E1', pos: [-4,-4,2] },
+                { url: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg', hex: '#F7DF1E', pos: [4,-3,-2] },
+                { url: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/ruby/ruby-original.svg', hex: '#CC342D', pos: [0,-1,-5] }
+            ];
+            const cubeGeom = new THREE.BoxGeometry(3, 3, 0.2);
+            skills.forEach(s => {
+                const tex = createLogoTexture(s.url, s.hex);
+                const matBody = new THREE.MeshPhysicalMaterial({ color: 0x111, metalness: 0.8, roughness: 0.4 });
+                const matFace = new THREE.MeshPhysicalMaterial({ map: tex });
+                const mesh = new THREE.Mesh(cubeGeom, [matBody, matBody, matBody, matBody, matFace, matFace]);
+                mesh.position.set(...s.pos);
+                groupSkills.add(mesh);
+            });
+            groupSkills.position.copy(zones[2].pos);
+            scene.add(groupSkills);
+            groupSkills.userData = { animate: (t) => { groupSkills.rotation.y = t * 0.2; } };
+
+            // 4. Projects (데이터 터널/실린더)
+            const geomProj = new THREE.CylinderGeometry(2, 2, 20, 32, 1, true);
+            const matProj = new THREE.MeshBasicMaterial({ color: 0x61dafb, wireframe: true, transparent: true, opacity: 0.2 });
+            const meshProj = new THREE.Mesh(geomProj, matProj);
+            meshProj.rotation.x = Math.PI / 2;
+            meshProj.position.copy(zones[3].pos);
+            scene.add(meshProj);
+            meshProj.userData = { animate: (t) => { meshProj.rotation.z = t * 0.5; } };
+        }
+
+        // SVG 이미지를 캔버스 텍스처로 변환
+        function createLogoTexture(imgUrl, colorHex) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#18181b'; ctx.fillRect(0,0,512,512);
+            ctx.strokeStyle = colorHex; ctx.lineWidth = 15; ctx.strokeRect(20,20,472,472);
+            
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.colorSpace = THREE.SRGBColorSpace;
+            const img = new Image(); img.crossOrigin = "Anonymous"; img.src = imgUrl;
+            img.onload = () => { ctx.drawImage(img, 106, 106, 300, 300); tex.needsUpdate = true; };
+            return tex;
+        }
+
+        /* ================= PC 컨트롤 (WASD + PointerLock) ================= */
+        function setupPCControls() {
+            const onKeyDown = function (event) {
+                switch (event.code) {
+                    case 'ArrowUp': case 'KeyW': moveForward = true; break;
+                    case 'ArrowLeft': case 'KeyA': moveLeft = true; break;
+                    case 'ArrowDown': case 'KeyS': moveBackward = true; break;
+                    case 'ArrowRight': case 'KeyD': moveRight = true; break;
+                }
+            };
+            const onKeyUp = function (event) {
+                switch (event.code) {
+                    case 'ArrowUp': case 'KeyW': moveForward = false; break;
+                    case 'ArrowLeft': case 'KeyA': moveLeft = false; break;
+                    case 'ArrowDown': case 'KeyS': moveBackward = false; break;
+                    case 'ArrowRight': case 'KeyD': moveRight = false; break;
+                }
+            };
+            document.addEventListener('keydown', onKeyDown);
+            document.addEventListener('keyup', onKeyUp);
+
+            // 마우스 회전 제어
+            document.addEventListener('mousemove', (event) => {
+                if (document.pointerLockElement === document.body) {
+                    const movementX = event.movementX || event.mozMovementX || 0;
+                    const movementY = event.movementY || event.mozMovementY || 0;
+                    
+                    yaw -= movementX * 0.002;
+                    pitch -= movementY * 0.002;
+                    
+                    // 고개 꺾임 방지 (-90도 ~ 90도)
+                    pitch = Math.max(-Math.PI/2, Math.min(Math.PI/2, pitch));
+                    
+                    camera.rotation.set(pitch, yaw, 0);
+                }
+            });
+
+            // 화면 클릭 시 다시 락 (HUD 클릭 시 예외 처리)
+            document.addEventListener('click', (e) => {
+                // 패널(HUD)이나 링크를 클릭한 경우는 락하지 않음
+                if (e.target.closest('.hud-panel') || e.target.closest('#start-screen')) return;
+                document.body.requestPointerLock();
+            });
+        }
+
+        /* ================= 모바일 컨트롤 (조이스틱 + 터치 드래그) ================= */
+        function setupMobileControls() {
+            const joyZone = document.getElementById('joystick-zone');
+            const joyKnob = document.getElementById('joystick-knob');
+            const lookZone = document.getElementById('touch-look-zone');
+            
+            let joyActive = false;
+            let joyCenterX, joyCenterY;
+            const maxRadius = 35; // 조이스틱 가동 범위
+
+            joyZone.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                joyActive = true;
+                const rect = joyZone.getBoundingClientRect();
+                joyCenterX = rect.left + rect.width / 2;
+                joyCenterY = rect.top + rect.height / 2;
+                handleJoystickMove(e.touches[0]);
+            });
+
+            joyZone.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                if(joyActive) handleJoystickMove(e.touches[0]);
+            });
+
+            const stopJoystick = (e) => {
+                e.preventDefault();
+                joyActive = false;
+                joyKnob.style.transform = `translate(-50%, -50%)`;
+                moveForward = moveBackward = moveLeft = moveRight = false;
+            };
+            joyZone.addEventListener('touchend', stopJoystick);
+            joyZone.addEventListener('touchcancel', stopJoystick);
+
+            function handleJoystickMove(touch) {
+                let dx = touch.clientX - joyCenterX;
+                let dy = touch.clientY - joyCenterY;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                
+                if (distance > maxRadius) {
+                    dx = (dx / distance) * maxRadius;
+                    dy = (dy / distance) * maxRadius;
+                }
+                
+                // 손잡이 시각적 이동
+                joyKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+
+                // 이동 논리 적용 (Y축이 앞뒤, X축이 좌우)
+                // 조이스틱을 위로 밀면(-dy) 전진, 아래로(+dy) 후진
+                const normX = dx / maxRadius;
+                const normY = dy / maxRadius;
+                
+                // 역치(Deadzone) 적용
+                moveForward = normY < -0.2;
+                moveBackward = normY > 0.2;
+                moveRight = normX > 0.2;
+                moveLeft = normX < -0.2;
+            }
+
+            // 시점(Look) 제어 (오른쪽 화면)
+            let lastTouchX = 0;
+            let lastTouchY = 0;
+            
+            lookZone.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                lastTouchX = e.touches[0].clientX;
+                lastTouchY = e.touches[0].clientY;
+            });
+            
+            lookZone.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                const touchX = e.touches[0].clientX;
+                const touchY = e.touches[0].clientY;
+                
+                const deltaX = touchX - lastTouchX;
+                const deltaY = touchY - lastTouchY;
+                
+                yaw -= deltaX * 0.005; // 민감도
+                pitch -= deltaY * 0.005;
+                pitch = Math.max(-Math.PI/2, Math.min(Math.PI/2, pitch));
+                
+                camera.rotation.set(pitch, yaw, 0);
+                
+                lastTouchX = touchX;
+                lastTouchY = touchY;
+            });
+        }
+
+        /* ================= 렌더링 루프 ================= */
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = performance.now();
+            const delta = (time - prevTime) / 1000;
+
+            // 1. 물리적 이동 (관성/Friction 적용)
+            velocity.x -= velocity.x * 5.0 * delta; // 마찰력
+            velocity.z -= velocity.z * 5.0 * delta;
+
+            direction.z = Number(moveForward) - Number(moveBackward);
+            direction.x = Number(moveRight) - Number(moveLeft);
+            direction.normalize(); // 대각선 이동 속도 보정
+
+            if (moveForward || moveBackward) velocity.z -= direction.z * speedMultiplier * delta;
+            if (moveLeft || moveRight) velocity.x -= direction.x * speedMultiplier * delta;
+
+            // 카메라 로컬 축 기준 이동 (바라보는 방향으로 이동)
+            camera.translateX(velocity.x * delta);
+            camera.translateZ(velocity.z * delta);
+            // Y축(상하)은 고정 (자유 비행을 원하면 주석 처리)
+            camera.position.y = 0; 
+
+            // 2. 오브젝트 애니메이션 실행
+            scene.children.forEach(child => {
+                if(child.userData && child.userData.animate) {
+                    child.userData.animate(time * 0.001);
+                }
+            });
+
+            // 3. UI 업데이트 및 구역(Zone) 체크
+            updateHUD();
+
+            renderer.render(scene, camera);
+            prevTime = time;
+        }
+
+        // 거리 기반 홀로그램 UI 띄우기
+        function updateHUD() {
+            // 좌표 텍스트 업데이트
+            document.getElementById('coord-display').innerHTML = 
+                `X: ${Math.round(camera.position.x)} | Z: ${Math.round(camera.position.z)}<br>Status: Exploring`;
+
+            let closestZone = null;
+            let minDistance = Infinity;
+
+            // 카메라와 각 구역의 거리 측정
+            zones.forEach(zone => {
+                const dist = camera.position.distanceTo(zone.pos);
+                if (dist < zone.radius && dist < minDistance) {
+                    minDistance = dist;
+                    closestZone = zone;
+                }
+            });
+
+            // 구역 진입/이탈 처리
+            if (closestZone) {
+                if (activeHud !== closestZone.id) {
+                    // 이전 HUD 끄기
+                    if (activeHud) document.getElementById(activeHud).classList.remove('active');
+                    // 새 HUD 켜기
+                    activeHud = closestZone.id;
+                    document.getElementById(activeHud).classList.add('active');
+                }
+            } else {
+                if (activeHud) {
+                    document.getElementById(activeHud).classList.remove('active');
+                    activeHud = null;
+                }
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

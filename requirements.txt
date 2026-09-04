@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+jinja2
+bcsfe
+python-multipart
+firebase_admin

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Save Editor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'BMDOHYEON_FALLBACK';
+            src: local('BM DoHyeon'), url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/BMDOHYEON.woff') format('woff');
+            font-weight: normal; font-style: normal;
+        }
+
+        :root {
+            --ink: #111215;
+            --ink-secondary: #58595E;
+            --ink-tertiary: #8E8F94;
+            --glass-bg: rgba(255, 255, 255, 0.35);
+            --glass-card: rgba(255, 255, 255, 0.42);
+            --glass-border: rgba(255, 255, 255, 0.7);
+            --glass-border-subtle: rgba(255, 255, 255, 0.45);
+            --accent-blue: #0071E3;
+            --ease-ios: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        *, *::before, *::after, html, body, input, button, select, textarea, span, div, h1, h2, p, label, a {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+            font-family: 'Do Hyeon', 'BMDOHYEON_FALLBACK', sans-serif !important;
+            font-weight: normal;
+        }
+
+        html, body {
+            width: 100%; height: 100%; min-height: 100dvh;
+            color: var(--ink); overflow-x: hidden;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        body {
+            background-color: #F2F4F8;
+            background-image: 
+                radial-gradient(at 10% 15%, rgba(255, 170, 185, 0.45) 0px, transparent 40%),
+                radial-gradient(at 90% 10%, rgba(255, 220, 160, 0.45) 0px, transparent 40%),
+                radial-gradient(at 50% 45%, rgba(255, 255, 175, 0.35) 0px, transparent 40%),
+                radial-gradient(at 10% 85%, rgba(160, 240, 200, 0.45) 0px, transparent 40%),
+                radial-gradient(at 90% 80%, rgba(170, 215, 255, 0.5) 0px, transparent 40%),
+                radial-gradient(at 50% 95%, rgba(215, 180, 255, 0.45) 0px, transparent 40%),
+                linear-gradient(145deg, #F9FBFF 0%, #EBF0F8 100%);
+            background-attachment: fixed;
+        }
+
+        .app-container {
+            width: 100%; max-width: 370px;
+            padding: calc(env(safe-area-inset-top, 16px) + 12px) 16px calc(env(safe-area-inset-bottom, 16px) + 12px);
+            display: flex; flex-direction: column; justify-content: center;
+            position: relative; z-index: 1;
+        }
+
+        .header { text-align: center; margin-bottom: 12px; }
+        .brand-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 10px; border-radius: 999px;
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border); margin-bottom: 6px;
+        }
+        .brand-badge svg { width: 11px; height: 11px; fill: var(--accent-blue); }
+        .brand-badge span { font-size: 11px; color: var(--ink-secondary); }
+
+        h1 { font-size: 20px; color: var(--ink); line-height: 1.2; margin-bottom: 2px; letter-spacing: 0.5px; }
+        .subtitle { font-size: 13px; color: var(--ink-secondary); line-height: 1.2; }
+
+        .glass-panel {
+            background: var(--glass-card);
+            backdrop-filter: blur(35px) saturate(190%); -webkit-backdrop-filter: blur(35px) saturate(190%);
+            border-radius: 22px; border: 1px solid var(--glass-border); padding: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04), inset 0 1px 1.5px rgba(255, 255, 255, 0.9), inset 0 -1px 1px rgba(255, 255, 255, 0.2);
+        }
+
+        .alert {
+            padding: 8px 10px; border-radius: 12px; font-size: 13px; text-align: center;
+            margin-bottom: 10px; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); line-height: 1.3;
+        }
+        .alert-error { background: rgba(255, 59, 48, 0.12); color: #D70015; border: 1px solid rgba(255, 59, 48, 0.2); }
+        .alert-success { background: rgba(52, 199, 89, 0.14); color: #1A7F37; border: 1px solid rgba(52, 199, 89, 0.25); }
+
+        .form-group { margin-bottom: 9px; }
+        label { display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; color: var(--ink-secondary); margin-bottom: 3px; padding: 0 2px; }
+        input {
+            width: 100%; height: 42px; padding: 0 12px; background: rgba(255, 255, 255, 0.4);
+            border: 1px solid var(--glass-border-subtle); border-radius: 12px; font-size: 15px; color: var(--ink);
+            outline: none; transition: all 0.15s ease; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+        input::placeholder { color: var(--ink-tertiary); font-size: 14px; }
+        input:focus { background: rgba(255, 255, 255, 0.7); border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12); }
+
+        .btn-liquid {
+            position: relative; width: 100%; height: 44px; border-radius: 13px; font-size: 15px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            text-decoration: none; border: 1px solid var(--glass-border);
+            transition: transform 0.12s var(--ease-ios), opacity 0.15s ease; margin-top: 8px;
+        }
+        .btn-primary {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 100%), rgba(0, 113, 227, 0.85);
+            color: #FFFFFF; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 6px 16px rgba(0, 113, 227, 0.22), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.3); color: var(--ink);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8);
+        }
+        .btn-ghost {
+            background: transparent; color: var(--ink-secondary);
+            border: 1px solid rgba(0,0,0,0.15); margin-top: 8px;
+        }
+
+        .btn-liquid:active:not(:disabled) { transform: scale(0.98); opacity: 0.9; }
+        .btn-liquid:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+        .status-center { text-align: center; padding: 4px 0 2px; }
+        .status-icon-box {
+            width: 44px; height: 44px; border-radius: 14px; margin: 0 auto 8px;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid var(--glass-border); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+        }
+        .icon-lock { background: rgba(255, 59, 48, 0.12); }
+        .icon-lock svg { width: 20px; height: 20px; fill: #D70015; }
+        .icon-success { background: rgba(52, 199, 89, 0.15); }
+        .icon-success svg { width: 20px; height: 20px; fill: #1A7F37; }
+
+        .status-title { font-size: 17px; color: var(--ink); margin-bottom: 2px; }
+        .status-desc { font-size: 13px; color: var(--ink-secondary); margin-bottom: 12px; line-height: 1.35; }
+
+        .credential-container { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+        .credential-card {
+            background: rgba(255, 255, 255, 0.35); border: 1px solid var(--glass-border);
+            border-radius: 12px; padding: 8px 12px; text-align: left; position: relative; cursor: pointer;
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); transition: background 0.12s ease;
+        }
+        .credential-card:active { background: rgba(255, 255, 255, 0.6); }
+        .credential-label { font-size: 11px; color: var(--ink-secondary); text-transform: uppercase; line-height: 1; margin-bottom: 3px; }
+        .credential-value { font-size: 16px; color: var(--accent-blue); letter-spacing: 0.5px; user-select: all; line-height: 1.2; }
+        .copy-hint { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--ink-tertiary); }
+
+        .footer { text-align: center; margin-top: 12px; }
+        .footer-text { font-size: 12px; color: var(--ink-tertiary); }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.25); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 16px;
+            opacity: 1; transition: opacity 0.2s ease;
+        }
+        .modal-overlay.hidden { opacity: 0; pointer-events: none; display: flex !important; }
+        .modal-box { width: 100%; max-width: 330px; transform: scale(1); transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+        .modal-overlay.hidden .modal-box { transform: scale(0.95); }
+        
+        .info-section {
+            background: rgba(255, 255, 255, 0.45); border-radius: 14px; padding: 12px;
+            margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.7); text-align: left;
+        }
+        .info-section h3 { font-size: 15px; color: var(--ink); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .info-section ul { list-style: none; font-size: 13px; color: var(--ink-secondary); line-height: 1.6; }
+        .info-section ul li::before { content: '•'; margin-right: 5px; color: var(--accent-blue); }
+        
+        .price-list li { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 4px; margin-bottom: 4px; }
+        .price-list li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .price-list li::before { content: none !important; }
+        .price-val { font-weight: bold; color: var(--accent-blue); font-size: 14px;}
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <!-- 차이점 안내 팝업창 -->
+    <div id="info-modal" class="modal-overlay hidden" onclick="closeInfo(event)">
+        <div class="glass-panel modal-box" onclick="event.stopPropagation()">
+            <h2 class="status-title" style="margin-bottom: 12px;">멤버십 안내 및 요금표</h2>
+            
+            <div class="info-section">
+                <h3>일반 회원 (무료)</h3>
+                <ul>
+                    <li>통조림 최대: 17,000개</li>
+                    <li>XP 최대: 20,000,000</li>
+                    <li>일반 티켓 최대: 50개</li>
+                    <li>기타 재화: 수정 불가 🔒</li>
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h3>VIP 회원 (키 필요)</h3>
+                <ul>
+                    <li>통조림 최대: 1,000,000개</li>
+                    <li>XP 최대: 100,000,000</li>
+                    <li>일반 티켓 최대: 999개</li>
+                    <li>레전드 티켓 최대: 999개</li>
+                    <li>플래티넘 티켓 최대: 999개</li>
+                    <li>개다래 (전체) 최대: 998개</li>
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h3>VIP 이용권 가격</h3>
+                <ul class="price-list">
+                    <li><span>1일 이용권</span> <span class="price-val">1,990원</span></li>
+                    <li><span>1주일 이용권</span> <span class="price-val">4,490원</span></li>
+                    <li><span>1달 이용권</span> <span class="price-val">9,900원</span></li>
+                    <li><span>무제한 이용권</span> <span class="price-val">19,900원</span></li>
+                </ul>
+            </div>
+
+            <button onclick="closeInfo(event)" class="btn-liquid btn-primary" style="margin-top: 14px;">닫기</button>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <header class="header">
+            <div class="brand-badge">
+                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                <span>Save Modifier</span>
+            </div>
+            <h1>냥슬리 무통 에디터</h1>
+            <p class="subtitle">세이브 데이터를 안전하게 수정합니다</p>
+        </header>
+
+        <main class="glass-panel">
+            <div id="message-box" class="alert hidden"></div>
+
+            <!-- 0. 메인 진입 화면 -->
+            <section id="section-intro" class="hidden">
+                <div class="status-center">
+                    <h2 class="status-title" style="margin-bottom: 12px;">이용 방법을 선택하세요</h2>
+                    <button onclick="selectMembership('guest')" class="btn-liquid btn-secondary">
+                        비회원으로 가입 (무료)
+                    </button>
+                    <button onclick="selectMembership('member')" class="btn-liquid btn-primary">
+                        회원으로 가입 (VIP 키 필요)
+                    </button>
+                    
+                    <button onclick="openInfo()" class="btn-liquid btn-secondary" style="margin-top: 14px;">
+                        일반 / VIP 차이 및 가격 안내
+                    </button>
+                    
+                    <div style="display: flex; gap: 8px; margin-top: 8px;">
+                        <a href="https://open.kakao.com/o/pEVLslHi" target="_blank" rel="noopener noreferrer" class="btn-liquid btn-ghost" style="margin-top: 0;">
+                            개발자 문의하기
+                        </a>
+                        <a href="https://open.kakao.com/o/pEVLslHi" target="_blank" rel="noopener noreferrer" class="btn-liquid btn-primary" style="margin-top: 0; background: rgba(0, 113, 227, 0.1); color: var(--accent-blue); border-color: rgba(0, 113, 227, 0.3); box-shadow: none;">
+                            VIP 키 구매하기
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 0-1. 회원 키 인증 화면 -->
+            <section id="section-auth" class="hidden">
+                <div class="form-group">
+                    <label for="vip_key">VIP 인증 키</label>
+                    <input type="text" id="vip_key" placeholder="발급받은 키를 입력하세요" autocomplete="off">
+                </div>
+                <button onclick="verifyKey()" id="btn-verify" class="btn-liquid btn-primary">키 인증하기</button>
+                <button onclick="goBackToIntro()" class="btn-liquid btn-secondary">뒤로 가기</button>
+            </section>
+
+            <!-- 1. 잠금 화면 -->
+            <section id="section-locked" class="hidden">
+                <div class="status-center">
+                    <div class="status-icon-box icon-lock">
+                        <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                    </div>
+                    <h2 class="status-title">에디터 접근 제한</h2>
+                    <p class="status-desc">현재 잠금 상태입니다. 채널에서 확인하세요.</p>
+                    <a href="https://open.kakao.com/o/pEVLslHi" target="_blank" rel="noopener noreferrer" class="btn-liquid btn-secondary">문의 및 상태 확인</a>
+                </div>
+            </section>
+
+            <!-- 2. 세이브 로드 화면 -->
+            <section id="section-load" class="hidden">
+                <div class="form-group">
+                    <label for="transfer_code">이어하기 코드</label>
+                    <input type="text" id="transfer_code" placeholder="코드 입력" autocomplete="off" spellcheck="false">
+                </div>
+                <div class="form-group">
+                    <label for="confirmation_code">인증 번호</label>
+                    <input type="text" id="confirmation_code" placeholder="인증 번호 입력" autocomplete="off" spellcheck="false">
+                </div>
+                <button onclick="loadSave()" id="btn-load" class="btn-liquid btn-primary">세이브 불러오기</button>
+                <a href="https://open.kakao.com/o/pEVLslHi" target="_blank" rel="noopener noreferrer" class="btn-liquid btn-secondary">제작자 문의</a>
+            </section>
+
+            <!-- 3. 에디터 화면 -->
+            <section id="section-modify" class="hidden">
+                <div class="form-group">
+                    <label for="catfood">
+                        <span>통조림</span>
+                        <span id="label-catfood-max" style="font-size: 11px; color: var(--ink-tertiary);">최대 17,000</span>
+                    </label>
+                    <input type="number" id="catfood" placeholder="수량 입력">
+                </div>
+                <div class="form-group">
+                    <label for="xp">
+                        <span>XP (경험치)</span>
+                        <span id="label-xp-max" style="font-size: 11px; color: var(--ink-tertiary);">최대 20,000,000</span>
+                    </label>
+                    <input type="number" id="xp" placeholder="경험치 입력">
+                </div>
+                <div class="form-group">
+                    <label for="normal_tickets">
+                        <span>일반 티켓 (냥코)</span>
+                        <span id="label-normal-max" style="font-size: 11px; color: var(--ink-tertiary);">최대 50</span>
+                    </label>
+                    <input type="number" id="normal_tickets" placeholder="티켓 수량 입력">
+                </div>
+                
+                <div class="form-group hidden" id="group-legend-ticket">
+                    <label for="legend_tickets">
+                        <span>레전드 티켓</span>
+                        <span style="font-size: 11px; color: var(--ink-tertiary);">최대 999</span>
+                    </label>
+                    <input type="number" id="legend_tickets" placeholder="티켓 수량 입력">
+                </div>
+                <div class="form-group hidden" id="group-platinum-ticket">
+                    <label for="platinum_tickets">
+                        <span>플래티넘 티켓</span>
+                        <span style="font-size: 11px; color: var(--ink-tertiary);">최대 999</span>
+                    </label>
+                    <input type="number" id="platinum_tickets" placeholder="티켓 수량 입력">
+                </div>
+                <div class="form-group hidden" id="group-catfruit">
+                    <label for="catfruit">
+                        <span>개다래 (전체)</span>
+                        <span style="font-size: 11px; color: var(--ink-tertiary);">최대 998</span>
+                    </label>
+                    <input type="number" id="catfruit" placeholder="수량 일괄 입력">
+                </div>
+
+                <button onclick="modifySave()" id="btn-modify" class="btn-liquid btn-primary">수정 및 업로드</button>
+            </section>
+
+            <!-- 4. 결과 화면 -->
+            <section id="section-result" class="hidden">
+                <div class="status-center">
+                    <div class="status-icon-box icon-success">
+                        <svg viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+                    </div>
+                    <h2 class="status-title">업로드 완료</h2>
+                    <p class="status-desc">새 코드로 게임을 이어하세요.</p>
+
+                    <div class="credential-container">
+                        <div class="credential-card" onclick="copyText('new_transfer_code')">
+                            <div class="credential-label">이어하기 코드</div>
+                            <div class="credential-value" id="new_transfer_code"></div>
+                            <span class="copy-hint">복사</span>
+                        </div>
+                        <div class="credential-card" onclick="copyText('new_confirmation_code')">
+                            <div class="credential-label">인증 번호</div>
+                            <div class="credential-value" id="new_confirmation_code"></div>
+                            <span class="copy-hint">복사</span>
+                        </div>
+                    </div>
+
+                    <button onclick="location.reload()" class="btn-liquid btn-secondary">완료</button>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer"><p class="footer-text">Protected by Nyansly Engine</p></footer>
+    </div>
+
+    <script>
+        let sessionToken = ""; 
+        let currentUserType = "guest"; 
+        let currentVipKey = "";
+
+        // 기기 고유 지문 식별자 (Local Storage 기반)
+        function getOrCreateDeviceId() {
+            let deviceId = localStorage.getItem('nyansly_device_id');
+            if (!deviceId) {
+                deviceId = 'DEV-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now().toString(36).toUpperCase();
+                localStorage.setItem('nyansly_device_id', deviceId);
+            }
+            return deviceId;
+        }
+        const currentDeviceId = getOrCreateDeviceId();
+
+        function openInfo() { document.getElementById('info-modal').classList.remove('hidden'); }
+        function closeInfo(e) { e.stopPropagation(); document.getElementById('info-modal').classList.add('hidden'); }
+        function showMessage(msg, isError = false) {
+            const box = document.getElementById('message-box');
+            box.textContent = msg; box.className = 'alert ' + (isError ? 'alert-error' : 'alert-success'); box.classList.remove('hidden');
+        }
+        function copyText(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            if (!text) return;
+            navigator.clipboard.writeText(text).then(() => { showMessage("클립보드에 복사되었습니다.", false); }).catch(() => {});
+        }
+        function selectMembership(type) {
+            currentUserType = type; document.getElementById('section-intro').classList.add('hidden');
+            if (type === 'member') document.getElementById('section-auth').classList.remove('hidden');
+            else document.getElementById('section-load').classList.remove('hidden');
+        }
+        function goBackToIntro() {
+            document.getElementById('section-auth').classList.add('hidden');
+            document.getElementById('message-box').classList.add('hidden');
+            document.getElementById('section-intro').classList.remove('hidden');
+        }
+
+        async function checkLockStatus() {
+            try {
+                const response = await fetch('/api/lock_status'); const data = await response.json();
+                if (data.locked) document.getElementById('section-locked').classList.remove('hidden');
+                else document.getElementById('section-intro').classList.remove('hidden');
+            } catch (e) { document.getElementById('section-intro').classList.remove('hidden'); }
+        }
+        checkLockStatus();
+
+        async function verifyKey() {
+            const keyInput = document.getElementById('vip_key').value.trim();
+            if (!keyInput) return showMessage("키를 입력해주세요.", true);
+            const btn = document.getElementById('btn-verify');
+            btn.disabled = true; btn.textContent = "확인 중..."; document.getElementById('message-box').classList.add('hidden');
+            
+            const formData = new FormData(); 
+            formData.append('vip_key', keyInput);
+            formData.append('device_id', currentDeviceId); // 기기 식별자 전송
+
+            try {
+                const response = await fetch('/api/verify_key', { method: 'POST', body: formData });
+                const data = await response.json();
+                if (data.success) {
+                    currentVipKey = keyInput;
+                    document.getElementById('section-auth').classList.add('hidden');
+                    document.getElementById('section-load').classList.remove('hidden');
+                    showMessage("VIP 인증이 완료되었습니다.");
+                    document.getElementById('label-catfood-max').textContent = "최대 1,000,000";
+                    document.getElementById('label-xp-max').textContent = "최대 100,000,000";
+                    document.getElementById('label-normal-max').textContent = "최대 999";
+                    document.getElementById('group-legend-ticket').classList.remove('hidden');
+                    document.getElementById('group-platinum-ticket').classList.remove('hidden');
+                    document.getElementById('group-catfruit').classList.remove('hidden');
+                } else {
+                    showMessage(data.error || "유효하지 않은 키입니다.", true);
+                }
+            } catch (e) { 
+                showMessage("서버 통신 오류가 발생했습니다.", true);
+            } finally { 
+                btn.disabled = false; btn.textContent = "키 인증하기"; 
+            }
+        }
+
+        async function loadSave() {
+            const tc = document.getElementById('transfer_code').value.trim();
+            const cc = document.getElementById('confirmation_code').value.trim();
+            if (!tc || !cc) return showMessage("코드와 인증 번호를 모두 입력해주세요.", true);
+            const btn = document.getElementById('btn-load');
+            btn.disabled = true; btn.textContent = "불러오는 중..."; document.getElementById('message-box').classList.add('hidden');
+            
+            const formData = new FormData();
+            formData.append('transfer_code', tc); formData.append('confirmation_code', cc);
+            formData.append('membership_type', currentUserType);
+            if (currentUserType === 'member') {
+                formData.append('vip_key', currentVipKey);
+                formData.append('device_id', currentDeviceId); // 기기 식별자 교차 검증
+            }
+
+            try {
+                const response = await fetch('/api/load_save', { method: 'POST', body: formData });
+                const data = await response.json();
+                if (data.success) {
+                    sessionToken = data.token;
+                    document.getElementById('catfood').value = data.catfood;
+                    document.getElementById('xp').value = data.xp;
+                    document.getElementById('section-load').classList.add('hidden');
+                    document.getElementById('section-modify').classList.remove('hidden');
+                    showMessage("데이터를 불러왔습니다.");
+                } else showMessage(data.error || "불러오기에 실패했습니다.", true);
+            } catch (e) { showMessage("서버 통신 중 오류가 발생했습니다.", true);
+            } finally { btn.disabled = false; btn.textContent = "세이브 불러오기"; }
+        }
+
+        async function modifySave() {
+            const catfood = Number(document.getElementById('catfood').value);
+            const xp = Number(document.getElementById('xp').value);
+            const normal = Number(document.getElementById('normal_tickets').value || 0);
+            const btn = document.getElementById('btn-modify');
+            const formData = new FormData();
+            formData.append('catfood', catfood); formData.append('xp', xp); formData.append('normal_tickets', normal);
+
+            if (currentUserType === 'member') {
+                const legend = Number(document.getElementById('legend_tickets').value || 0);
+                const platinum = Number(document.getElementById('platinum_tickets').value || 0);
+                const catfruit = Number(document.getElementById('catfruit').value || 0);
+                
+                if (catfood > 1000000) return showMessage("통조림은 최대 1,000,000개까지 설정 가능합니다.", true);
+                if (xp > 100000000) return showMessage("XP는 최대 100,000,000까지 설정 가능합니다.", true);
+                if (normal > 999) return showMessage("일반 티켓은 최대 999개까지 설정 가능합니다.", true);
+                if (legend > 999) return showMessage("레전드 티켓은 최대 999개까지 설정 가능합니다.", true);
+                if (platinum > 999) return showMessage("플래티넘 티켓은 최대 999개까지 설정 가능합니다.", true);
+                if (catfruit > 998) return showMessage("개다래는 최대 998개까지 설정 가능합니다.", true);
+
+                formData.append('legend_tickets', legend); formData.append('platinum_tickets', platinum); formData.append('catfruit', catfruit);
+            } else {
+                if (catfood > 17000) return showMessage("통조림은 최대 17,000개까지 설정 가능합니다.", true);
+                if (xp > 20000000) return showMessage("XP는 최대 20,000,000까지 설정 가능합니다.", true);
+                if (normal > 50) return showMessage("일반 티켓은 최대 50개까지 설정 가능합니다.", true);
+            }
+
+            btn.disabled = true; btn.textContent = "업로드 중..."; 
+            document.getElementById('message-box').classList.add('hidden');
+
+            try {
+                const response = await fetch('/api/modify_and_upload', {
+                    method: 'POST', headers: { 'x-session-token': sessionToken }, body: formData
+                });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('section-modify').classList.add('hidden');
+                    document.getElementById('message-box').classList.add('hidden');
+                    document.getElementById('section-result').classList.remove('hidden');
+                    document.getElementById('new_transfer_code').textContent = data.transfer_code;
+                    document.getElementById('new_confirmation_code').textContent = data.confirmation_code;
+                } else showMessage(data.error || "업로드 실패", true);
+            } catch (e) { showMessage("서버 통신 중 오류가 발생했습니다.", true);
+            } finally { btn.disabled = false; btn.textContent = "수정 및 업로드"; }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>냥슬리 무통 에디터 - 관리자 대시보드</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap');
+        @font-face {
+            font-family: 'BMDOHYEON_FALLBACK';
+            src: local('BM DoHyeon'), url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/BMDOHYEON.woff') format('woff');
+            font-weight: normal; font-style: normal;
+        }
+        :root { --glass-blue: #0A84FF; --glass-blue-dark: #0060DF; --glass-red: #FF453A; --glass-green: #32D74B; --ink: #1C1C1E; --muted: #8E8E93; }
+        
+        *, *::before, *::after, html, body, input, button, select, textarea, span, div, h1, h2 { 
+            box-sizing: border-box; 
+            font-family: 'Do Hyeon', 'BMDOHYEON_FALLBACK', sans-serif !important; 
+            margin: 0; padding: 0;
+        }
+        
+        html, body { 
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 40px; position: relative; overflow-x: hidden;
+            background: radial-gradient(circle at 10% 20%, #7DD6FF 0%, transparent 50%), radial-gradient(circle at 90% 80%, #C6A5FF 0%, transparent 50%), linear-gradient(135deg, #EAF1FB 0%, #F4EEFB 50%, #FBEFF3 100%);
+        }
+        
+        .bg-orb { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.4; z-index: 0; animation: drift 20s ease-in-out infinite; }
+        .orb-a { width: 400px; height: 400px; background: #5AC8FA; top: -100px; left: -100px; }
+        .orb-b { width: 450px; height: 450px; background: #BF5AF2; bottom: -100px; right: -100px; animation-delay: -10s; }
+        @keyframes drift { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(30px, 40px) scale(1.05); } }
+
+        .container { position: relative; z-index: 1; width: 100%; max-width: 1000px; display: flex; flex-direction: column; gap: 24px; }
+
+        .top-bar {
+            background: rgba(255, 255, 255, 0.55); backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px);
+            border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 10px 40px rgba(31, 38, 135, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.9); 
+            padding: 20px 32px; display: flex; justify-content: space-between; align-items: center;
+        }
+        
+        .top-left { display: flex; align-items: center; gap: 16px; }
+        .app-icon { width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(145deg, #FF6961, var(--glass-red)); display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 8px 20px rgba(255,69,58,0.35); }
+        .top-left h1 { font-size: 24px; color: var(--ink); letter-spacing: 0.5px; }
+
+        .top-right { display: flex; align-items: center; gap: 16px; background: rgba(255,255,255,0.6); padding: 10px 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.8); }
+        .status-text { font-size: 16px; color: var(--glass-green); }
+        .status-text.on { color: var(--glass-red); }
+
+        .toggle-switch { position: relative; display: inline-block; width: 51px; height: 31px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(120,120,128,0.32); border-radius: 34px; transition: 0.25s; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04); }
+        .toggle-slider:before { position: absolute; content: ""; height: 27px; width: 27px; left: 2px; top: 2px; background: #fff; border-radius: 50%; transition: 0.25s; box-shadow: 0 3px 8px rgba(0,0,0,0.2); }
+        input:checked + .toggle-slider { background: linear-gradient(155deg, #FF6961, var(--glass-red)); }
+        input:checked + .toggle-slider:before { transform: translateX(20px); }
+
+        .alert { padding: 14px 20px; border-radius: 16px; font-size: 15px; text-align: center; }
+        .alert-error { background-color: rgba(255, 69, 58, 0.12); color: #D70015; border: 1px solid rgba(255, 69, 58, 0.25); }
+        .alert-success { background-color: rgba(50, 215, 75, 0.12); color: #1F8A34; border: 1px solid rgba(50, 215, 75, 0.25); }
+        .hidden { display: none !important; }
+
+        .dashboard-grid { display: grid; grid-template-columns: 340px 1fr; gap: 24px; align-items: start; }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.55); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 10px 40px rgba(31, 38, 135, 0.08); padding: 32px;
+        }
+
+        .glass-card h2 { font-size: 20px; margin-bottom: 20px; color: var(--ink); display: flex; justify-content: space-between; align-items: center; }
+
+        select { 
+            width: 100%; padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(0,0,0,0.1); 
+            background-color: rgba(255,255,255,0.8); 
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat; background-position: right 16px center; background-size: 16px;
+            font-size: 16px; color: var(--ink); outline: none; appearance: none; cursor: pointer; margin-bottom: 16px;
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.8);
+        }
+        
+        button { width: 100%; padding: 16px; border: none; border-radius: 14px; font-size: 16px; cursor: pointer; color: #fff; background: linear-gradient(155deg, #3FA9FF, var(--glass-blue-dark)); box-shadow: 0 8px 20px rgba(10,132,255,0.35), inset 0 1px 1px rgba(255,255,255,0.5); transition: transform 0.15s ease; }
+        button:active { transform: translateY(2px); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .btn-refresh { width: auto; padding: 6px 12px; font-size: 14px; border-radius: 10px; background: rgba(255,255,255,0.8); color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+
+        .key-display { background: rgba(255, 255, 255, 0.9); border: 2px dashed rgba(10, 132, 255, 0.4); padding: 20px; border-radius: 16px; text-align: center; font-size: 24px; color: var(--glass-blue-dark); letter-spacing: 2px; cursor: pointer; user-select: all; transition: background 0.2s; margin-top: 16px; }
+        .key-hint { text-align: center; font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+        .list-header { display: grid; grid-template-columns: 110px 1fr 1fr 140px; padding: 0 16px 12px; font-size: 14px; color: var(--muted); border-bottom: 2px solid rgba(0,0,0,0.05); margin-bottom: 12px; }
+        
+        .key-list-container { max-height: 400px; overflow-y: auto; padding-right: 8px; }
+        .key-list-container::-webkit-scrollbar { width: 6px; }
+        .key-list-container::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.15); border-radius: 10px; }
+        
+        .key-row { display: grid; grid-template-columns: 110px 1fr 1fr 140px; align-items: center; padding: 14px 16px; background: rgba(255,255,255,0.6); border-radius: 14px; margin-bottom: 8px; transition: all 0.2s; border: 1px solid transparent; }
+        .key-row:hover { background: rgba(255,255,255,0.9); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.06); border-color: rgba(255,255,255,1); }
+        .key-row.expired { opacity: 0.6; filter: grayscale(50%); background: rgba(0,0,0,0.03); }
+        
+        .key-val { font-weight: bold; color: var(--glass-blue-dark); font-size: 16px; letter-spacing: 1px; }
+        .key-date { font-size: 13px; color: var(--ink-secondary); }
+        .key-exp { font-size: 13px; color: var(--glass-red); font-weight: bold; }
+        .key-exp.safe { color: var(--glass-green); font-weight: normal; }
+        
+        .action-group { display: flex; gap: 6px; }
+        .btn-reset-device { width: 50%; background: rgba(0, 113, 227, 0.1); color: var(--accent-blue); box-shadow: none; padding: 8px 4px; border-radius: 10px; font-size: 12px; }
+        .btn-reset-device:hover { background: rgba(0, 113, 227, 0.2); }
+        .btn-delete { width: 50%; background: rgba(255, 69, 58, 0.1); color: #D70015; box-shadow: none; padding: 8px 4px; border-radius: 10px; font-size: 12px; }
+        .btn-delete:hover { background: rgba(255, 69, 58, 0.2); }
+
+        .denied-box { text-align: center; padding: 40px; color: var(--muted); font-size: 18px; background: rgba(255,255,255,0.5); border-radius: 20px; }
+        .footer-mark { text-align: center; margin-top: auto; font-size: 13px; color: rgba(60,60,67,0.5); padding-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="bg-orb orb-a"></div>
+    <div class="bg-orb orb-b"></div>
+
+    <div class="container">
+        <div class="top-bar hidden" id="top-bar">
+            <div class="top-left">
+                <div class="app-icon">🔧</div>
+                <h1>냥슬리 관리자 패널</h1>
+            </div>
+            <div class="top-right">
+                <span id="status-text" class="status-text off">에디터 개방됨 🟢</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="lock-toggle" onchange="toggleLock()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div id="message-box" class="alert hidden"></div>
+        <div id="section-denied" class="hidden"><div class="denied-box">🔒 비밀번호가 올바르지 않습니다.</div></div>
+
+        <div id="section-panel" class="hidden dashboard-grid">
+            <div class="glass-card">
+                <h2>새 VIP 키 발급</h2>
+                <select id="key-duration">
+                    <option value="1">1일권 (1,990원)</option>
+                    <option value="7">1주일권 (4,490원)</option>
+                    <option value="30">1달권 (9,900원)</option>
+                    <option value="999">무제한권 (19,900원)</option>
+                </select>
+                <button onclick="generateVipKey()" id="btn-generate">키 발급하기</button>
+                
+                <div id="new-key-container" class="hidden">
+                    <div id="new-key" class="key-display" onclick="copyKey()"></div>
+                    <div class="key-hint">👆 터치하여 클립보드에 복사하세요</div>
+                </div>
+            </div>
+
+            <div class="glass-card" style="padding-right: 24px;">
+                <h2>발급된 키 데이터베이스 <button class="btn-refresh" onclick="loadKeys()">🔄 새로고침</button></h2>
+                
+                <div class="list-header">
+                    <span>인증 키</span>
+                    <span>발급 일시</span>
+                    <span>상태 / 기기 정보</span>
+                    <span style="text-align: center;">관리</span>
+                </div>
+
+                <div class="key-list-container" id="key-list"></div>
+            </div>
+        </div>
+
+        <div class="footer-mark">Nyansly Engine Admin System</div>
+    </div>
+
+    <script>
+        const ADMIN_PASSWORD = "110923"; 
+
+        function showMessage(msg, isError = false) {
+            const box = document.getElementById('message-box');
+            box.textContent = msg; box.className = 'alert ' + (isError ? 'alert-error' : 'alert-success'); box.classList.remove('hidden');
+        }
+
+        async function checkPassword() {
+            const input = prompt("관리자 비밀번호를 입력하세요");
+            if (input === ADMIN_PASSWORD) {
+                document.getElementById('top-bar').classList.remove('hidden');
+                document.getElementById('section-panel').classList.remove('hidden');
+                loadStatus(); loadKeys(); 
+            } else { document.getElementById('section-denied').classList.remove('hidden'); }
+        }
+
+        async function loadStatus() {
+            try {
+                const response = await fetch('/api/lock_status'); const data = await response.json(); updateToggleUI(data.locked);
+            } catch (e) { showMessage("상태를 불러오지 못했습니다.", true); }
+        }
+
+        function updateToggleUI(locked) {
+            document.getElementById('lock-toggle').checked = locked;
+            const statusText = document.getElementById('status-text');
+            if (locked) { statusText.textContent = "에디터 잠금됨 🔒"; statusText.className = "status-text on"; } 
+            else { statusText.textContent = "에디터 개방됨 🟢"; statusText.className = "status-text off"; }
+        }
+
+        async function toggleLock() {
+            const checkbox = document.getElementById('lock-toggle'); const desiredState = checkbox.checked;
+            document.getElementById('message-box').classList.add('hidden');
+            const formData = new FormData(); formData.append('locked', desiredState);
+            try {
+                const response = await fetch('/api/toggle_lock', { method: 'POST', body: formData });
+                const data = await response.json();
+                if (data.success) { updateToggleUI(desiredState); showMessage(desiredState ? "에디터 접속을 차단했습니다." : "에디터 접속을 허용했습니다."); } 
+                else { checkbox.checked = !desiredState; showMessage(data.error || "변경 실패", true); }
+            } catch (e) { checkbox.checked = !desiredState; showMessage("서버 통신 중 오류가 발생했습니다.", true); }
+        }
+
+        async function generateVipKey() {
+            const btn = document.getElementById('btn-generate');
+            const duration = document.getElementById('key-duration').value;
+            btn.disabled = true; btn.textContent = "서버 통신 중..."; document.getElementById('message-box').classList.add('hidden');
+
+            const formData = new FormData();
+            formData.append('admin_password', ADMIN_PASSWORD);
+            formData.append('duration_days', duration);
+
+            try {
+                const response = await fetch('/api/generate_key', { method: 'POST', body: formData });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('new-key').textContent = data.key;
+                    document.getElementById('new-key-container').classList.remove('hidden');
+                    showMessage("새 VIP 키가 정상적으로 발급되었습니다.");
+                    loadKeys(); 
+                } else showMessage(data.error || "키 발급 실패", true);
+            } catch (e) { showMessage("서버 통신 중 오류가 발생했습니다.", true);
+            } finally { btn.disabled = false; btn.textContent = "키 발급하기"; }
+        }
+
+        async function loadKeys() {
+            const formData = new FormData(); formData.append('admin_password', ADMIN_PASSWORD);
+            try {
+                const response = await fetch('/api/list_keys', { method: 'POST', body: formData });
+                const data = await response.json();
+                if(data.success) renderKeys(data.keys);
+            } catch(e) {}
+        }
+
+        function renderKeys(keys) {
+            const container = document.getElementById('key-list');
+            container.innerHTML = '';
+            if(!keys || Object.keys(keys).length === 0) {
+                container.innerHTML = '<div style="text-align:center; font-size:15px; color:var(--muted); padding: 40px 0;">발급된 활성 키가 없습니다.</div>';
+                return;
+            }
+            
+            const now = Math.floor(Date.now() / 1000);
+            const sortedKeys = Object.keys(keys).map(k => ({ id: k, ...keys[k] })).sort((a, b) => b.created_at - a.created_at);
+
+            sortedKeys.forEach(keyObj => {
+                const createDate = new Date(keyObj.created_at * 1000).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
+                const expiresAt = keyObj.expires_at || 0;
+                let expText = "";
+                let isExpired = false;
+
+                if (expiresAt === 0) {
+                    expText = '<span class="key-exp safe">무제한</span>';
+                } else {
+                    const expDate = new Date(expiresAt * 1000).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour:'2-digit', minute:'2-digit' });
+                    if (now > expiresAt) {
+                        isExpired = true;
+                        expText = `<span class="key-exp">만료 (${expDate})</span>`;
+                    } else {
+                        expText = `<span class="key-exp safe">만료: ${expDate}</span>`;
+                    }
+                }
+
+                // 기기 귀속 상태 UI
+                const deviceStatus = keyObj.bound_device_id 
+                    ? `<span style="font-size:11px; color:var(--accent-blue);">기기등록됨</span>` 
+                    : `<span style="font-size:11px; color:var(--muted);">미등록</span>`;
+                
+                const div = document.createElement('div');
+                div.className = 'key-row' + (isExpired ? ' expired' : '');
+                div.innerHTML = `
+                    <span class="key-val">${keyObj.id}</span>
+                    <span class="key-date">${createDate}</span>
+                    <div>
+                        <div>${expText}</div>
+                        <div>${deviceStatus}</div>
+                    </div>
+                    <div class="action-group">
+                        <button class="btn-reset-device" onclick="resetDevice('${keyObj.id}')" title="기기 초기화">초기화</button>
+                        <button class="btn-delete" onclick="deleteKey('${keyObj.id}')">삭제</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // 기기 귀속 초기화 API 호출
+        async function resetDevice(keyId) {
+            if(!confirm(`[${keyId}] 키에 묶인 기기 정보를 초기화하시겠습니까?\n새로운 기기에서 다시 인증할 수 있게 됩니다.`)) return;
+            const formData = new FormData(); 
+            formData.append('admin_password', ADMIN_PASSWORD); 
+            formData.append('vip_key', keyId);
+            try {
+                const response = await fetch('/api/reset_key_device', { method: 'POST', body: formData });
+                const data = await response.json();
+                if(data.success) {
+                    showMessage(`[${keyId}] 기기 초기화 완료.`);
+                    loadKeys();
+                } else showMessage(data.error || "초기화 실패", true);
+            } catch(e) { showMessage("서버 통신 오류", true); }
+        }
+
+        async function deleteKey(keyId) {
+            if(!confirm(`[${keyId}] 키를 삭제하시겠습니까?`)) return;
+            const formData = new FormData(); formData.append('admin_password', ADMIN_PASSWORD); formData.append('vip_key', keyId);
+            try {
+                const response = await fetch('/api/delete_key', { method: 'POST', body: formData });
+                const data = await response.json();
+                if(data.success) {
+                    showMessage(`[${keyId}] 키 삭제 완료.`);
+                    if (document.getElementById('new-key').textContent === keyId) document.getElementById('new-key-container').classList.add('hidden');
+                    loadKeys(); 
+                } else showMessage(data.error || "삭제 실패", true);
+            } catch(e) { showMessage("서버 통신 중 오류가 발생했습니다.", true); }
+        }
+
+        function copyKey() {
+            const text = document.getElementById('new-key').textContent;
+            if (!text) return;
+            navigator.clipboard.writeText(text).then(() => { showMessage("키가 클립보드에 복사되었습니다."); }).catch(() => {});
+        }
+
+        checkPassword();
+    </script>
+</body>
+</html>
