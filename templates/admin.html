@@ -14,9 +14,7 @@
         :root { --glass-blue: #0A84FF; --glass-blue-dark: #0060DF; --glass-red: #FF453A; --glass-green: #32D74B; --ink: #1C1C1E; --muted: #8E8E93; }
         
         *, *::before, *::after, html, body, input, button, select, textarea, span, div, h1, h2 { 
-            box-sizing: border-box; 
-            font-family: 'Do Hyeon', 'BMDOHYEON_FALLBACK', sans-serif !important; 
-            margin: 0; padding: 0;
+            box-sizing: border-box; font-family: 'Do Hyeon', 'BMDOHYEON_FALLBACK', sans-serif !important; margin: 0; padding: 0;
         }
         
         html, body { 
@@ -42,7 +40,6 @@
         .top-left { display: flex; align-items: center; gap: 16px; }
         .app-icon { width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(145deg, #FF6961, var(--glass-red)); display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 8px 20px rgba(255,69,58,0.35); }
         .top-left h1 { font-size: 24px; color: var(--ink); letter-spacing: 0.5px; }
-
         .top-right { display: flex; align-items: center; gap: 16px; background: rgba(255,255,255,0.6); padding: 10px 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.8); }
         .status-text { font-size: 16px; color: var(--glass-green); }
         .status-text.on { color: var(--glass-red); }
@@ -60,13 +57,7 @@
         .hidden { display: none !important; }
 
         .dashboard-grid { display: grid; grid-template-columns: 340px 1fr; gap: 24px; align-items: start; }
-        
-        .glass-card {
-            background: rgba(255, 255, 255, 0.55); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
-            border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 10px 40px rgba(31, 38, 135, 0.08); padding: 32px;
-        }
-
+        .glass-card { background: rgba(255, 255, 255, 0.55); backdrop-filter: blur(30px); border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 10px 40px rgba(31, 38, 135, 0.08); padding: 32px; }
         .glass-card h2 { font-size: 20px; margin-bottom: 20px; color: var(--ink); display: flex; justify-content: space-between; align-items: center; }
 
         select { 
@@ -80,14 +71,13 @@
         
         button { width: 100%; padding: 16px; border: none; border-radius: 14px; font-size: 16px; cursor: pointer; color: #fff; background: linear-gradient(155deg, #3FA9FF, var(--glass-blue-dark)); box-shadow: 0 8px 20px rgba(10,132,255,0.35), inset 0 1px 1px rgba(255,255,255,0.5); transition: transform 0.15s ease; }
         button:active { transform: translateY(2px); }
-        button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-refresh { width: auto; padding: 6px 12px; font-size: 14px; border-radius: 10px; background: rgba(255,255,255,0.8); color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 
-        .key-display { background: rgba(255, 255, 255, 0.9); border: 2px dashed rgba(10, 132, 255, 0.4); padding: 20px; border-radius: 16px; text-align: center; font-size: 24px; color: var(--glass-blue-dark); letter-spacing: 2px; cursor: pointer; user-select: all; transition: background 0.2s; margin-top: 16px; }
+        .key-display { background: rgba(255, 255, 255, 0.9); border: 2px dashed rgba(10, 132, 255, 0.4); padding: 20px; border-radius: 16px; text-align: center; font-size: 24px; color: var(--glass-blue-dark); letter-spacing: 2px; cursor: pointer; margin-top: 16px; }
         .key-hint { text-align: center; font-size: 12px; color: var(--muted); margin-top: 8px; }
 
         .list-header { display: grid; grid-template-columns: 110px 1fr 1fr 140px; padding: 0 16px 12px; font-size: 14px; color: var(--muted); border-bottom: 2px solid rgba(0,0,0,0.05); margin-bottom: 12px; }
-        
         .key-list-container { max-height: 400px; overflow-y: auto; padding-right: 8px; }
         .key-list-container::-webkit-scrollbar { width: 6px; }
         .key-list-container::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.15); border-radius: 10px; }
@@ -100,12 +90,11 @@
         .key-date { font-size: 13px; color: var(--ink-secondary); }
         .key-exp { font-size: 13px; color: var(--glass-red); font-weight: bold; }
         .key-exp.safe { color: var(--glass-green); font-weight: normal; }
+        .key-exp.onetime { color: var(--glass-blue); font-weight: bold; }
         
         .action-group { display: flex; gap: 6px; }
         .btn-reset-device { width: 50%; background: rgba(0, 113, 227, 0.1); color: var(--accent-blue); box-shadow: none; padding: 8px 4px; border-radius: 10px; font-size: 12px; }
-        .btn-reset-device:hover { background: rgba(0, 113, 227, 0.2); }
         .btn-delete { width: 50%; background: rgba(255, 69, 58, 0.1); color: #D70015; box-shadow: none; padding: 8px 4px; border-radius: 10px; font-size: 12px; }
-        .btn-delete:hover { background: rgba(255, 69, 58, 0.2); }
 
         .denied-box { text-align: center; padding: 40px; color: var(--muted); font-size: 18px; background: rgba(255,255,255,0.5); border-radius: 20px; }
         .footer-mark { text-align: center; margin-top: auto; font-size: 13px; color: rgba(60,60,67,0.5); padding-top: 30px; }
@@ -136,11 +125,13 @@
         <div id="section-panel" class="hidden dashboard-grid">
             <div class="glass-card">
                 <h2>새 VIP 키 발급</h2>
+                <!-- 🔥 가격표에 맞는 새로운 드롭다운 메뉴 -->
                 <select id="key-duration">
-                    <option value="1">1일권 (1,990원)</option>
-                    <option value="7">1주일권 (4,490원)</option>
-                    <option value="30">1달권 (9,900원)</option>
-                    <option value="999">무제한권 (19,900원)</option>
+                    <option value="use_1">1회용 키 (1,990원 / 1회 수정후 소멸)</option>
+                    <option value="1">1일 무제한 (2,990원)</option>
+                    <option value="7">1주일 무제한 (9,990원)</option>
+                    <option value="30">1달 무제한 (19,900원)</option>
+                    <option value="999">평생 무제한 👑 (29,900원)</option>
                 </select>
                 <button onclick="generateVipKey()" id="btn-generate">키 발급하기</button>
                 
@@ -163,7 +154,6 @@
                 <div class="key-list-container" id="key-list"></div>
             </div>
         </div>
-
         <div class="footer-mark">Nyansly Engine Admin System</div>
     </div>
 
@@ -216,7 +206,7 @@
 
             const formData = new FormData();
             formData.append('admin_password', ADMIN_PASSWORD);
-            formData.append('duration_days', duration);
+            formData.append('duration_type', duration); // 수정됨
 
             try {
                 const response = await fetch('/api/generate_key', { method: 'POST', body: formData });
@@ -253,23 +243,32 @@
 
             sortedKeys.forEach(keyObj => {
                 const createDate = new Date(keyObj.created_at * 1000).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
-                const expiresAt = keyObj.expires_at || 0;
                 let expText = "";
                 let isExpired = false;
 
-                if (expiresAt === 0) {
-                    expText = '<span class="key-exp safe">무제한</span>';
-                } else {
-                    const expDate = new Date(expiresAt * 1000).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour:'2-digit', minute:'2-digit' });
-                    if (now > expiresAt) {
+                // 1회용 키 렌더링 로직 추가
+                if (keyObj.key_type === 'one_time') {
+                    if (keyObj.is_active === false) {
                         isExpired = true;
-                        expText = `<span class="key-exp">만료 (${expDate})</span>`;
+                        expText = `<span class="key-exp">1회용 (사용 완료)</span>`;
                     } else {
-                        expText = `<span class="key-exp safe">만료: ${expDate}</span>`;
+                        expText = `<span class="key-exp onetime">1회용 (미사용)</span>`;
+                    }
+                } else {
+                    const expiresAt = keyObj.expires_at || 0;
+                    if (expiresAt === 0) {
+                        expText = '<span class="key-exp safe">평생 무제한</span>';
+                    } else {
+                        const expDate = new Date(expiresAt * 1000).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour:'2-digit', minute:'2-digit' });
+                        if (now > expiresAt) {
+                            isExpired = true;
+                            expText = `<span class="key-exp">만료 (${expDate})</span>`;
+                        } else {
+                            expText = `<span class="key-exp safe">만료: ${expDate}</span>`;
+                        }
                     }
                 }
 
-                // 기기 귀속 상태 UI
                 const deviceStatus = keyObj.bound_device_id 
                     ? `<span style="font-size:11px; color:var(--accent-blue);">기기등록됨</span>` 
                     : `<span style="font-size:11px; color:var(--muted);">미등록</span>`;
@@ -292,7 +291,6 @@
             });
         }
 
-        // 기기 귀속 초기화 API 호출
         async function resetDevice(keyId) {
             if(!confirm(`[${keyId}] 키에 묶인 기기 정보를 초기화하시겠습니까?\n새로운 기기에서 다시 인증할 수 있게 됩니다.`)) return;
             const formData = new FormData(); 
@@ -301,10 +299,8 @@
             try {
                 const response = await fetch('/api/reset_key_device', { method: 'POST', body: formData });
                 const data = await response.json();
-                if(data.success) {
-                    showMessage(`[${keyId}] 기기 초기화 완료.`);
-                    loadKeys();
-                } else showMessage(data.error || "초기화 실패", true);
+                if(data.success) { showMessage(`[${keyId}] 기기 초기화 완료.`); loadKeys(); } 
+                else showMessage(data.error || "초기화 실패", true);
             } catch(e) { showMessage("서버 통신 오류", true); }
         }
 
@@ -327,7 +323,6 @@
             if (!text) return;
             navigator.clipboard.writeText(text).then(() => { showMessage("키가 클립보드에 복사되었습니다."); }).catch(() => {});
         }
-
         checkPassword();
     </script>
 </body>
