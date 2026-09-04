@@ -17,10 +17,34 @@ from bcsfe_service import BCSFEService
 import firebase_admin
 from firebase_admin import credentials, db
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-FIREBASE_CRED_PATH = os.path.join(BASE_DIR, "firebase-adminsdk.json") 
-FIREBASE_DB_URL = "https://battlecatscatfood-default-rtdb.asia-southeast1.firebasedatabase.app" 
+import json
+from dotenv import load_dotenv
 
+load_dotenv()
+
+FIREBASE_CREDENTIALS_JSON = os.getenv("FIREBASE_CREDENTIALS_JSON")
+FIREBASE_DB_URL = os.getenv("FIREBASE_DB_URL")
+
+if not FIREBASE_CREDENTIALS_JSON:
+    raise RuntimeError("FIREBASE_CREDENTIALS_JSON 환경변수가 없습니다.")
+
+if not FIREBASE_DB_URL:
+    raise RuntimeError("FIREBASE_DB_URL 환경변수가 없습니다.")
+
+try:
+    if not firebase_admin._apps:
+        firebase_config = json.loads(FIREBASE_CREDENTIALS_JSON)
+        cred = credentials.Certificate(firebase_config)
+
+        firebase_admin.initialize_app(cred, {
+            "databaseURL": FIREBASE_DB_URL
+        })
+
+        print("✅ Firebase Realtime Database 연동 완료!")
+
+except Exception as e:
+    print(f"❌ Firebase 초기화 중 오류 발생: {e}")
+    raise
 try:
     if not firebase_admin._apps:
         if os.path.exists(FIREBASE_CRED_PATH):
