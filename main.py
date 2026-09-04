@@ -20,43 +20,41 @@ from firebase_admin import credentials, db
 import json
 from dotenv import load_dotenv
 
-load_dotenv()
+import os
+import firebase_admin
+from firebase_admin import credentials, db
 
-FIREBASE_CREDENTIALS_JSON = os.getenv("FIREBASE_CREDENTIALS_JSON")
-FIREBASE_DB_URL = os.getenv("FIREBASE_DB_URL")
+# ==========================================
+# 🔥 Firebase Admin SDK 안전 초기화 (Render Secret Files 대응)
+# ==========================================
+FIREBASE_DB_URL = "https://battlecatscatfood-default-rtdb.asia-southeast1.firebasedatabase.app"
 
-if not FIREBASE_CREDENTIALS_JSON:
-    raise RuntimeError("FIREBASE_CREDENTIALS_JSON 환경변수가 없습니다.")
+# Render Secret File 우선 경로 (/etc/secrets/ 또는 앱 루트 경로)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+candidate_paths = [
+    "/etc/secrets/firebase-adminsdk.json",
+    os.path.join(BASE_DIR, "firebase-adminsdk.json"),
+    "firebase-adminsdk.json"
+]
 
-if not FIREBASE_DB_URL:
-    raise RuntimeError("FIREBASE_DB_URL 환경변수가 없습니다.")
+target_file = None
+for path in candidate_paths:
+    if os.path.exists(path):
+        target_file = path
+        break
 
-try:
-    if not firebase_admin._apps:
-        firebase_config = json.loads(FIREBASE_CREDENTIALS_JSON)
-        cred = credentials.Certificate(firebase_config)
-
-        firebase_admin.initialize_app(cred, {
-            "databaseURL": FIREBASE_DB_URL
-        })
-
-        print("✅ Firebase Realtime Database 연동 완료!")
-
-except Exception as e:
-    print(f"❌ Firebase 초기화 중 오류 발생: {e}")
-    raise
-try:
-    if not firebase_admin._apps:
-        if os.path.exists(FIREBASE_CRED_PATH):
-            cred = credentials.Certificate(FIREBASE_CRED_PATH)
+if target_file:
+    try:
+        if not firebase_admin._apps:
+            cred = credentials.Certificate(target_file)
             firebase_admin.initialize_app(cred, {
                 'databaseURL': FIREBASE_DB_URL
             })
-            print("✅ Firebase Realtime Database 연동 완료!")
-        else:
-            print(f"⚠️ 경고: 키 파일을 찾을 수 없습니다. 경로 확인 -> {FIREBASE_CRED_PATH}")
-except Exception as e:
-    print(f"❌ Firebase 초기화 중 오류 발생: {e}")
+            print(f"✅ Firebase Realtime Database 연동 완료! (로드 경로: {target_file})")
+    except Exception as e:
+        print(f"❌ Firebase 초기화 중 오류 발생: {e}")
+else:
+    print(f"⚠️ 경고: Firebase 키 파일을 찾을 수 없습니다. (탐색 경로: {candidate_paths})")
 
 # ==========================================
 # ⚙️ 세션 설정
