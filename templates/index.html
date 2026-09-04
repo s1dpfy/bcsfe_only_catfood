@@ -15,25 +15,16 @@
         }
 
         :root {
-            --ink: #111215;
-            --ink-secondary: #58595E;
-            --ink-tertiary: #8E8F94;
-            --glass-bg: rgba(255, 255, 255, 0.35);
-            --glass-card: rgba(255, 255, 255, 0.42);
-            --glass-border: rgba(255, 255, 255, 0.7);
-            --glass-border-subtle: rgba(255, 255, 255, 0.45);
-            --accent-blue: #0071E3;
+            --ink: #111215; --ink-secondary: #58595E; --ink-tertiary: #8E8F94;
+            --glass-card: rgba(255, 255, 255, 0.42); --glass-border: rgba(255, 255, 255, 0.7);
+            --glass-border-subtle: rgba(255, 255, 255, 0.45); --accent-blue: #0071E3;
             --ease-ios: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         *, *::before, *::after, html, body, input, button, select, textarea, span, div, h1, h2, p, label, a {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-font-smoothing: antialiased;
-            font-family: 'Do Hyeon', 'BMDOHYEON_FALLBACK', sans-serif !important;
-            font-weight: normal;
+            box-sizing: border-box; margin: 0; padding: 0;
+            -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased;
+            font-family: 'Do Hyeon', 'BMDOHYEON_FALLBACK', sans-serif !important; font-weight: normal;
         }
 
         html, body {
@@ -117,11 +108,7 @@
             backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
             box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8);
         }
-        .btn-ghost {
-            background: transparent; color: var(--ink-secondary);
-            border: 1px solid rgba(0,0,0,0.15); margin-top: 8px;
-        }
-
+        .btn-ghost { background: transparent; color: var(--ink-secondary); border: 1px solid rgba(0,0,0,0.15); margin-top: 8px; }
         .btn-liquid:active:not(:disabled) { transform: scale(0.98); opacity: 0.9; }
         .btn-liquid:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
@@ -135,7 +122,6 @@
         .icon-lock svg { width: 20px; height: 20px; fill: #D70015; }
         .icon-success { background: rgba(52, 199, 89, 0.15); }
         .icon-success svg { width: 20px; height: 20px; fill: #1A7F37; }
-
         .status-title { font-size: 17px; color: var(--ink); margin-bottom: 2px; }
         .status-desc { font-size: 13px; color: var(--ink-secondary); margin-bottom: 12px; line-height: 1.35; }
 
@@ -175,12 +161,12 @@
         .price-list li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .price-list li::before { content: none !important; }
         .price-val { font-weight: bold; color: var(--accent-blue); font-size: 14px;}
+        .price-tip { font-size: 11px; color: #D70015; text-align: center; margin-top: 8px; line-height: 1.3; }
 
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
-
     <!-- 차이점 안내 팝업창 -->
     <div id="info-modal" class="modal-overlay hidden" onclick="closeInfo(event)">
         <div class="glass-panel modal-box" onclick="event.stopPropagation()">
@@ -201,21 +187,21 @@
                 <ul>
                     <li>통조림 최대: 1,000,000개</li>
                     <li>XP 최대: 100,000,000</li>
-                    <li>일반 티켓 최대: 999개</li>
-                    <li>레전드 티켓 최대: 999개</li>
-                    <li>플래티넘 티켓 최대: 999개</li>
+                    <li>일반 티켓, 레전드 티켓, 플래티넘 최대: 999개</li>
                     <li>개다래 (전체) 최대: 998개</li>
                 </ul>
             </div>
 
             <div class="info-section">
-                <h3>VIP 이용권 가격</h3>
+                <h3>VIP 이용권 가격 (계좌/토스 기준)</h3>
                 <ul class="price-list">
-                    <li><span>1일 이용권</span> <span class="price-val">1,990원</span></li>
-                    <li><span>1주일 이용권</span> <span class="price-val">4,490원</span></li>
-                    <li><span>1달 이용권</span> <span class="price-val">9,900원</span></li>
-                    <li><span>무제한 이용권</span> <span class="price-val">19,900원</span></li>
+                    <li><span>1회용권 (1회 수정시 파기)</span> <span class="price-val">1,990원</span></li>
+                    <li><span>1일 무제한권</span> <span class="price-val">2,990원</span></li>
+                    <li><span>1주일 무제한권</span> <span class="price-val">9,990원</span></li>
+                    <li><span>1달 무제한권</span> <span class="price-val">19,900원</span></li>
+                    <li><span>평생 무제한권 👑</span> <span class="price-val">29,900원</span></li>
                 </ul>
+                <p class="price-tip">※ 문화상품권 결제시: 1회용(2천원) / 1주(1만원) / 1달(2만원) / 평생(3만원)</p>
             </div>
 
             <button onclick="closeInfo(event)" class="btn-liquid btn-primary" style="margin-top: 14px;">닫기</button>
@@ -235,7 +221,6 @@
         <main class="glass-panel">
             <div id="message-box" class="alert hidden"></div>
 
-            <!-- 0. 메인 진입 화면 -->
             <section id="section-intro" class="hidden">
                 <div class="status-center">
                     <h2 class="status-title" style="margin-bottom: 12px;">이용 방법을 선택하세요</h2>
@@ -254,14 +239,13 @@
                         <a href="https://open.kakao.com/o/pEVLslHi" target="_blank" rel="noopener noreferrer" class="btn-liquid btn-ghost" style="margin-top: 0;">
                             개발자 문의하기
                         </a>
-                        <a href="https://open.kakao.com/me/nyangs1" target="_blank" rel="noopener noreferrer" class="btn-liquid btn-primary" style="margin-top: 0; background: rgba(0, 113, 227, 0.1); color: var(--accent-blue); border-color: rgba(0, 113, 227, 0.3); box-shadow: none;">
+                        <a href="https://open.kakao.com/o/pEVLslHi" target="_blank" rel="noopener noreferrer" class="btn-liquid btn-primary" style="margin-top: 0; background: rgba(0, 113, 227, 0.1); color: var(--accent-blue); border-color: rgba(0, 113, 227, 0.3); box-shadow: none;">
                             VIP 키 구매하기
                         </a>
                     </div>
                 </div>
             </section>
 
-            <!-- 0-1. 회원 키 인증 화면 -->
             <section id="section-auth" class="hidden">
                 <div class="form-group">
                     <label for="vip_key">VIP 인증 키</label>
@@ -271,7 +255,6 @@
                 <button onclick="goBackToIntro()" class="btn-liquid btn-secondary">뒤로 가기</button>
             </section>
 
-            <!-- 1. 잠금 화면 -->
             <section id="section-locked" class="hidden">
                 <div class="status-center">
                     <div class="status-icon-box icon-lock">
@@ -283,7 +266,6 @@
                 </div>
             </section>
 
-            <!-- 2. 세이브 로드 화면 -->
             <section id="section-load" class="hidden">
                 <div class="form-group">
                     <label for="transfer_code">이어하기 코드</label>
@@ -297,7 +279,6 @@
                 <a href="https://open.kakao.com/o/pEVLslHi" target="_blank" rel="noopener noreferrer" class="btn-liquid btn-secondary">제작자 문의</a>
             </section>
 
-            <!-- 3. 에디터 화면 -->
             <section id="section-modify" class="hidden">
                 <div class="form-group">
                     <label for="catfood">
@@ -346,14 +327,13 @@
                 <button onclick="modifySave()" id="btn-modify" class="btn-liquid btn-primary">수정 및 업로드</button>
             </section>
 
-            <!-- 4. 결과 화면 -->
             <section id="section-result" class="hidden">
                 <div class="status-center">
                     <div class="status-icon-box icon-success">
                         <svg viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
                     </div>
                     <h2 class="status-title">업로드 완료</h2>
-                    <p class="status-desc">새 코드로 게임을 이어하세요.</p>
+                    <p class="status-desc" id="result-desc">새 코드로 게임을 이어하세요.</p>
 
                     <div class="credential-container">
                         <div class="credential-card" onclick="copyText('new_transfer_code')">
@@ -368,7 +348,7 @@
                         </div>
                     </div>
 
-                    <button onclick="location.reload()" class="btn-liquid btn-secondary">완료</button>
+                    <button onclick="location.reload()" class="btn-liquid btn-secondary">완료 (처음으로)</button>
                 </div>
             </section>
         </main>
@@ -381,7 +361,6 @@
         let currentUserType = "guest"; 
         let currentVipKey = "";
 
-        // 기기 고유 지문 식별자 (Local Storage 기반)
         function getOrCreateDeviceId() {
             let deviceId = localStorage.getItem('nyansly_device_id');
             if (!deviceId) {
@@ -431,7 +410,7 @@
             
             const formData = new FormData(); 
             formData.append('vip_key', keyInput);
-            formData.append('device_id', currentDeviceId); // 기기 식별자 전송
+            formData.append('device_id', currentDeviceId); 
 
             try {
                 const response = await fetch('/api/verify_key', { method: 'POST', body: formData });
@@ -469,7 +448,7 @@
             formData.append('membership_type', currentUserType);
             if (currentUserType === 'member') {
                 formData.append('vip_key', currentVipKey);
-                formData.append('device_id', currentDeviceId); // 기기 식별자 교차 검증
+                formData.append('device_id', currentDeviceId);
             }
 
             try {
@@ -481,7 +460,7 @@
                     document.getElementById('xp').value = data.xp;
                     document.getElementById('section-load').classList.add('hidden');
                     document.getElementById('section-modify').classList.remove('hidden');
-                    showMessage("데이터를 불러왔습니다.");
+                    showMessage("데이터를 성공적으로 불러왔습니다.");
                 } else showMessage(data.error || "불러오기에 실패했습니다.", true);
             } catch (e) { showMessage("서버 통신 중 오류가 발생했습니다.", true);
             } finally { btn.disabled = false; btn.textContent = "세이브 불러오기"; }
@@ -526,8 +505,13 @@
                     document.getElementById('section-modify').classList.add('hidden');
                     document.getElementById('message-box').classList.add('hidden');
                     document.getElementById('section-result').classList.remove('hidden');
+                    
                     document.getElementById('new_transfer_code').textContent = data.transfer_code;
                     document.getElementById('new_confirmation_code').textContent = data.confirmation_code;
+                    
+                    if (data.key_burned) {
+                        document.getElementById('result-desc').innerHTML = "새 코드로 게임을 이어하세요.<br><span style='color:#D70015;'>※ 1회용 키 사용이 완료되어 키가 만료되었습니다.</span>";
+                    }
                 } else showMessage(data.error || "업로드 실패", true);
             } catch (e) { showMessage("서버 통신 중 오류가 발생했습니다.", true);
             } finally { btn.disabled = false; btn.textContent = "수정 및 업로드"; }
