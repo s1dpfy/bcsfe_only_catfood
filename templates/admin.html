@@ -11,7 +11,7 @@
             src: local('BM DoHyeon'), url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/BMDOHYEON.woff') format('woff');
             font-weight: normal; font-style: normal;
         }
-        :root { --glass-blue: #0A84FF; --glass-blue-dark: #0060DF; --glass-red: #FF453A; --glass-green: #32D74B; --ink: #1C1C1E; --muted: #8E8E93; }
+        :root { --glass-blue: #0A84FF; --glass-blue-dark: #0060DF; --glass-gold: #E6A822; --glass-gold-dark: #c98c00; --glass-red: #FF453A; --glass-green: #32D74B; --ink: #1C1C1E; --muted: #8E8E93; }
         
         *, *::before, *::after, html, body, input, button, select, textarea, span, div, h1, h2 { 
             box-sizing: border-box; font-family: 'Do Hyeon', 'BMDOHYEON_FALLBACK', sans-serif !important; margin: 0; padding: 0;
@@ -38,21 +38,23 @@
         }
         
         .top-left { display: flex; align-items: center; gap: 16px; }
-        .app-icon { width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(145deg, #FF6961, var(--glass-red)); display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 8px 20px rgba(255,69,58,0.35); }
-        .top-left h1 { font-size: 24px; color: var(--ink); letter-spacing: 0.5px; }
+        .top-left h1 { font-size: 22px; color: var(--ink); letter-spacing: 0.5px; }
         .top-right { display: flex; align-items: center; gap: 16px; background: rgba(255,255,255,0.6); padding: 10px 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.8); }
-        .status-text { font-size: 16px; color: var(--glass-green); }
-        .status-text.on { color: var(--glass-red); }
+        
+        .status-text { font-size: 15px; color: var(--glass-green); font-weight: bold; }
+        /* 잠금 상태 빨간색 제거 */
+        .status-text.on { color: var(--ink); background: rgba(255, 255, 255, 0.8); padding: 2px 8px; border-radius: 6px; }
 
         .toggle-switch { position: relative; display: inline-block; width: 51px; height: 31px; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
         .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(120,120,128,0.32); border-radius: 34px; transition: 0.25s; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04); }
         .toggle-slider:before { position: absolute; content: ""; height: 27px; width: 27px; left: 2px; top: 2px; background: #fff; border-radius: 50%; transition: 0.25s; box-shadow: 0 3px 8px rgba(0,0,0,0.2); }
-        input:checked + .toggle-slider { background: linear-gradient(155deg, #FF6961, var(--glass-red)); }
+        input:checked + .toggle-slider { background: var(--ink); }
         input:checked + .toggle-slider:before { transform: translateX(20px); }
 
         .alert { padding: 14px 20px; border-radius: 16px; font-size: 15px; text-align: center; }
-        .alert-error { background-color: rgba(255, 69, 58, 0.12); color: #D70015; border: 1px solid rgba(255, 69, 58, 0.25); }
+        /* 에러 박스 빨간색 제거 */
+        .alert-error { background-color: rgba(255, 255, 255, 0.5); color: var(--ink); border: 1px solid rgba(255, 255, 255, 0.8); font-weight: bold; }
         .alert-success { background-color: rgba(50, 215, 75, 0.12); color: #1F8A34; border: 1px solid rgba(50, 215, 75, 0.25); }
         .hidden { display: none !important; }
 
@@ -65,42 +67,51 @@
             background-color: rgba(255,255,255,0.8); 
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat; background-position: right 16px center; background-size: 16px;
-            font-size: 16px; color: var(--ink); outline: none; appearance: none; cursor: pointer; margin-bottom: 16px;
+            font-size: 15px; color: var(--ink); outline: none; appearance: none; cursor: pointer; margin-bottom: 16px;
             box-shadow: inset 0 1px 2px rgba(255,255,255,0.8);
         }
         
-        button { width: 100%; padding: 16px; border: none; border-radius: 14px; font-size: 16px; cursor: pointer; color: #fff; background: linear-gradient(155deg, #3FA9FF, var(--glass-blue-dark)); box-shadow: 0 8px 20px rgba(10,132,255,0.35), inset 0 1px 1px rgba(255,255,255,0.5); transition: transform 0.15s ease; }
+        /* 버튼 공통: index.html 과 동일한 투명한 유리 재질로 통일 */
+        button { 
+            width: 100%; padding: 16px; border: 1px solid rgba(255, 255, 255, 0.7); border-radius: 14px; font-size: 16px; cursor: pointer; 
+            color: var(--ink); background: rgba(255, 255, 255, 0.3); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8); transition: transform 0.15s ease; 
+        }
         button:active { transform: translateY(2px); }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
-        .btn-refresh { width: auto; padding: 6px 12px; font-size: 14px; border-radius: 10px; background: rgba(255,255,255,0.8); color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .btn-refresh { width: auto; padding: 6px 12px; font-size: 14px; border-radius: 10px; }
 
         .key-display { background: rgba(255, 255, 255, 0.9); border: 2px dashed rgba(10, 132, 255, 0.4); padding: 20px; border-radius: 16px; text-align: center; font-size: 24px; color: var(--glass-blue-dark); letter-spacing: 2px; cursor: pointer; margin-top: 16px; }
         .key-hint { text-align: center; font-size: 12px; color: var(--muted); margin-top: 8px; }
 
-        .list-header { display: grid; grid-template-columns: 140px 1fr 1fr 140px; padding: 0 16px 12px; font-size: 14px; color: var(--muted); border-bottom: 2px solid rgba(0,0,0,0.05); margin-bottom: 12px; }
+        .list-header { display: grid; grid-template-columns: 150px 1fr 1fr 140px; padding: 0 16px 12px; font-size: 14px; color: var(--muted); border-bottom: 2px solid rgba(0,0,0,0.05); margin-bottom: 12px; }
         .key-list-container { max-height: 400px; overflow-y: auto; padding-right: 8px; }
         .key-list-container::-webkit-scrollbar { width: 6px; }
         .key-list-container::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.15); border-radius: 10px; }
         
-        .key-row { display: grid; grid-template-columns: 140px 1fr 1fr 140px; align-items: center; padding: 14px 16px; background: rgba(255,255,255,0.6); border-radius: 14px; margin-bottom: 8px; transition: all 0.2s; border: 1px solid transparent; }
+        .key-row { display: grid; grid-template-columns: 150px 1fr 1fr 140px; align-items: center; padding: 14px 16px; background: rgba(255,255,255,0.6); border-radius: 14px; margin-bottom: 8px; transition: all 0.2s; border: 1px solid transparent; }
         .key-row:hover { background: rgba(255,255,255,0.9); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.06); border-color: rgba(255,255,255,1); }
         .key-row.expired { opacity: 0.6; filter: grayscale(50%); background: rgba(0,0,0,0.03); }
         
-        .key-val { font-weight: bold; color: var(--glass-blue-dark); font-size: 16px; letter-spacing: 1px; display: flex; align-items: center;}
-        .tier-badge { padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-right: 6px; color: #FFF; }
-        .tier-gold { background: #E6A822; }
-        .tier-vip { background: #0A84FF; }
+        .key-val { font-weight: bold; color: var(--glass-blue-dark); font-size: 16px; letter-spacing: 1px; display: flex; align-items: center; }
         
+        .tier-badge { padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: bold; margin-right: 6px; color: #FFF; box-shadow: inset 0 1px 1px rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.3);}
+        .tier-gold { background: linear-gradient(135deg, #FFCC33, var(--glass-gold)); text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .tier-vip { background: linear-gradient(135deg, #3FA9FF, var(--glass-blue-dark)); }
+
         .key-date { font-size: 13px; color: var(--ink-secondary); }
-        .key-exp { font-size: 13px; color: var(--glass-red); font-weight: bold; }
+        .key-exp { font-size: 13px; color: var(--ink); font-weight: bold; }
         .key-exp.safe { color: var(--glass-green); font-weight: normal; }
         .key-exp.onetime { color: var(--glass-blue); font-weight: bold; }
+        /* 만료 텍스트 빨간색 제거 */
+        .key-exp.danger { color: var(--ink); background: rgba(255,255,255,0.8); padding: 2px 6px; border-radius: 4px; display: inline-block; }
         
         .action-group { display: flex; gap: 6px; }
-        .btn-reset-device { width: 50%; background: rgba(0, 113, 227, 0.1); color: var(--accent-blue); box-shadow: none; padding: 8px 4px; border-radius: 10px; font-size: 12px; }
-        .btn-delete { width: 50%; background: rgba(255, 69, 58, 0.1); color: #D70015; box-shadow: none; padding: 8px 4px; border-radius: 10px; font-size: 12px; }
+        .btn-reset-device { width: 50%; padding: 8px 4px; border-radius: 10px; font-size: 12px; }
+        .btn-delete { width: 50%; padding: 8px 4px; border-radius: 10px; font-size: 12px; }
 
-        .denied-box { text-align: center; padding: 40px; color: var(--muted); font-size: 18px; background: rgba(255,255,255,0.5); border-radius: 20px; }
+        /* 접근 거부 메시지 빨간색 제거 */
+        .denied-box { text-align: center; padding: 40px; color: var(--ink); font-size: 18px; background: rgba(255,255,255,0.5); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.8); font-weight: bold; }
         .footer-mark { text-align: center; margin-top: auto; font-size: 13px; color: rgba(60,60,67,0.5); padding-top: 30px; }
     </style>
 </head>
@@ -111,11 +122,10 @@
     <div class="container">
         <div class="top-bar hidden" id="top-bar">
             <div class="top-left">
-                <div class="app-icon">🔧</div>
                 <h1>냥슬리 관리자 패널</h1>
             </div>
             <div class="top-right">
-                <span id="status-text" class="status-text off">에디터 개방됨 🟢</span>
+                <span id="status-text" class="status-text off">에디터 개방됨</span>
                 <label class="toggle-switch">
                     <input type="checkbox" id="lock-toggle" onchange="toggleLock()">
                     <span class="toggle-slider"></span>
@@ -124,7 +134,7 @@
         </div>
 
         <div id="message-box" class="alert hidden"></div>
-        <div id="section-denied" class="hidden"><div class="denied-box">🔒 비밀번호가 올바르지 않습니다.</div></div>
+        <div id="section-denied" class="hidden"><div class="denied-box">비밀번호가 올바르지 않습니다.</div></div>
 
         <div id="section-panel" class="hidden dashboard-grid">
             <div class="glass-card">
@@ -135,18 +145,18 @@
                     <option value="gold_999">골드 평생 무제한 (17,900원)</option>
                     <option value="vip_use_1">VIP 1회용 (2,990원)</option>
                     <option value="vip_1">VIP 1일 무제한 (5,990원)</option>
-                    <option value="vip_999">VIP 평생 무제한 👑 (29,900원)</option>
+                    <option value="vip_999">VIP 평생 무제한 (29,900원)</option>
                 </select>
                 <button onclick="generateVipKey()" id="btn-generate">키 발급하기</button>
                 
                 <div id="new-key-container" class="hidden">
                     <div id="new-key" class="key-display" onclick="copyKey()"></div>
-                    <div class="key-hint">👆 터치하여 클립보드에 복사하세요</div>
+                    <div class="key-hint">터치하여 클립보드에 복사하세요</div>
                 </div>
             </div>
 
             <div class="glass-card" style="padding-right: 24px;">
-                <h2>발급된 키 데이터베이스 <button class="btn-refresh" onclick="loadKeys()">🔄 새로고침</button></h2>
+                <h2>발급된 키 데이터베이스 <button class="btn-refresh" onclick="loadKeys()">새로고침</button></h2>
                 
                 <div class="list-header">
                     <span>인증 키</span>
@@ -187,8 +197,8 @@
         function updateToggleUI(locked) {
             document.getElementById('lock-toggle').checked = locked;
             const statusText = document.getElementById('status-text');
-            if (locked) { statusText.textContent = "에디터 잠금됨 🔒"; statusText.className = "status-text on"; } 
-            else { statusText.textContent = "에디터 개방됨 🟢"; statusText.className = "status-text off"; }
+            if (locked) { statusText.textContent = "에디터 잠금됨"; statusText.className = "status-text on"; } 
+            else { statusText.textContent = "에디터 개방됨"; statusText.className = "status-text off"; }
         }
 
         async function toggleLock() {
@@ -205,7 +215,7 @@
 
         async function generateVipKey() {
             const btn = document.getElementById('btn-generate');
-            const selection = document.getElementById('key-type').value; // ex) 'gold_use_1'
+            const selection = document.getElementById('key-type').value; 
             const parts = selection.split('_');
             const tier = parts[0]; 
             const duration = parts.slice(1).join('_');
@@ -258,7 +268,7 @@
                 if (keyObj.key_type === 'one_time') {
                     if (keyObj.is_active === false) {
                         isExpired = true;
-                        expText = `<span class="key-exp">1회용 (사용 완료)</span>`;
+                        expText = `<span class="key-exp danger">1회용 (사용 완료)</span>`;
                     } else {
                         expText = `<span class="key-exp onetime">1회용 (미사용)</span>`;
                     }
@@ -270,7 +280,7 @@
                         const expDate = new Date(expiresAt * 1000).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour:'2-digit', minute:'2-digit' });
                         if (now > expiresAt) {
                             isExpired = true;
-                            expText = `<span class="key-exp">만료 (${expDate})</span>`;
+                            expText = `<span class="key-exp danger">만료 (${expDate})</span>`;
                         } else {
                             expText = `<span class="key-exp safe">만료: ${expDate}</span>`;
                         }
@@ -290,7 +300,7 @@
                     <span class="key-val"><span class="tier-badge ${tierClass}">${tierLabel}</span>${keyObj.id}</span>
                     <span class="key-date">${createDate}</span>
                     <div>
-                        <div>${expText}</div>
+                        <div style="margin-bottom: 2px;">${expText}</div>
                         <div>${deviceStatus}</div>
                     </div>
                     <div class="action-group">

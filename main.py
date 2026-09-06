@@ -1,4 +1,4 @@
-from typing import Optional # 추가된 부분
+from typing import Optional
 from fastapi import FastAPI, Request, Form, Header, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -95,7 +95,7 @@ def _db_get(path): return db.reference(path).get()
 def _db_delete(path): db.reference(path).delete()
 
 # ==========================================
-# 🔑 키 생성 API (Gold / VIP 구분 지원)
+# 🔑 키 생성 API
 # ==========================================
 @app.post("/api/generate_key")
 async def generate_key(admin_password: str = Form(...), duration_type: str = Form(...), tier: str = Form(...)):
@@ -172,7 +172,6 @@ async def verify_key(vip_key: str = Form(...), device_id: str = Form("")):
         elif bound_device != device_id:
             return {"success": False, "error": "이 키는 이미 다른 기기에 등록되어 있습니다. (기기 공유 불가)"}
 
-        # 키 검증 시 어떤 등급인지 반환 (기본값: 구버전 호환을 위해 vip)
         tier = key_data.get('tier', 'vip')
         return {"success": True, "tier": tier}
     except Exception: return {"success": False, "error": "인증 서버 통신 실패"}
@@ -219,21 +218,25 @@ async def load_save(transfer_code: str = Form(...), confirmation_code: str = For
             return {"success": False, "error": "이어하기 코드 또는 인증 번호가 올바르지 않거나, 게임 버전이 맞지 않습니다."}
 
         token = secrets.token_hex(16)
-        # 회원 등급(tier) 정보를 세션에 저장
         SESSIONS[token] = {"service": service, "last_active": time.time(), "tier": tier, "vip_key": vip_key}
-        summary = await asyncio.to_thread(service.summary)
         
+        summary = await asyncio.to_thread(service.summary)
+        current_data = summary.get("current", {})
+        
+        # 📌 모든 재화의 현재 수량을 프론트로 반환하도록 추가
         return {
             "success": True,
             "token": token,
-            "catfood": summary.get("current", {}).get("catfood", 0),
-            "xp": summary.get("current", {}).get("xp", 0)
+            "catfood": current_data.get("catfood", 0),
+            "xp": current_data.get("xp", 0),
+            "normal_tickets": current_data.get("normal_tickets", 0),
+            "legend_tickets": current_data.get("legend_tickets", 0),
+            "platinum_tickets": current_data.get("platinum_tickets", 0),
+            "catfruit": current_data.get("catfruit", 0)
         }
     except Exception as e:
         return {"success": False, "error": f"서버 처리 오류: {str(e)}"}
 
-
-# 빈 값이 넘어오면(None) 기존 데이터를 유지하도록 수정되었습니다.
 def _process_upload(service: BCSFEService, catfood, xp, normal, legend, platinum, catfruit, tier: str):
     is_premium = tier in ["gold", "vip"]
     
@@ -265,7 +268,6 @@ async def modify_and_upload(
     tier = session_data.get("tier", "guest")
     vip_key = session_data.get("vip_key")
     
-    # 등급별 상한선 검증
     if tier == "guest":
         if (catfood is not None and catfood > 17000) or \
            (xp is not None and xp > 20000000) or \
@@ -294,7 +296,6 @@ async def modify_and_upload(
         new_tc, new_cc = await asyncio.to_thread(_process_upload, service, catfood, xp, normal_tickets, legend_tickets, platinum_tickets, catfruit, tier)
         
         key_burned = False
-        # 📌 1회용 키 소진 (업로드 성공 시점에만 차감)
         if tier in ["gold", "vip"] and vip_key:
             key_data = await asyncio.to_thread(_db_get, f'keys/{vip_key}')
             if key_data and key_data.get('key_type') == 'one_time':

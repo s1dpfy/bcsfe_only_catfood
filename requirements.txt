@@ -5,3 +5,4 @@ bcsfe
 python-multipart
 firebase_admin
 python-dotenv
+websockets
