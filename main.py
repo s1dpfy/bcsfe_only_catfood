@@ -156,6 +156,10 @@ async def reset_key_device(admin_password: str = Form(...), vip_key: str = Form(
 
 @app.post("/api/verify_key")
 async def verify_key(vip_key: str = Form(...), device_id: str = Form("")):
+    # 어드민 키 입력 시 무조건 최고(VIP) 권한 부여
+    if vip_key == ADMIN_PASSWORD:
+        return {"success": True, "tier": "vip"}
+
     try:
         key_data = await asyncio.to_thread(_db_get, f'keys/{vip_key}')
         if not key_data or key_data.get('is_active') is not True:
@@ -192,25 +196,29 @@ async def load_save(transfer_code: str = Form(...), confirmation_code: str = For
 
     tier = "guest"
     if membership_type != "guest" and vip_key:
-        try:
-            key_data = await asyncio.to_thread(_db_get, f'keys/{vip_key}')
-            if key_data and key_data.get('is_active') is True:
-                if key_data.get('key_type') != 'one_time':
-                    expires_at = key_data.get('expires_at', 0)
-                    if expires_at != 0 and int(time.time()) > expires_at:
-                        return {"success": False, "error": "기간이 만료된 키입니다."}
-                
-                bound_device = key_data.get('bound_device_id', '')
-                if not bound_device:
-                    await asyncio.to_thread(_db_set, f'keys/{vip_key}/bound_device_id', device_id)
-                elif bound_device != device_id:
-                    return {"success": False, "error": "등록되지 않은 기기에서의 비정상 접근입니다."}
+        # 어드민 키 확인[cite: 2]
+        if vip_key == ADMIN_PASSWORD:
+            tier = "vip"
+        else:
+            try:
+                key_data = await asyncio.to_thread(_db_get, f'keys/{vip_key}')
+                if key_data and key_data.get('is_active') is True:
+                    if key_data.get('key_type') != 'one_time':
+                        expires_at = key_data.get('expires_at', 0)
+                        if expires_at != 0 and int(time.time()) > expires_at:
+                            return {"success": False, "error": "기간이 만료된 키입니다."}
                     
-                tier = key_data.get('tier', 'vip')
-            else:
-                return {"success": False, "error": "유효하지 않거나 이미 소진된 키입니다."}
-        except Exception:
-            return {"success": False, "error": "키 인증 서버 오류"}
+                    bound_device = key_data.get('bound_device_id', '')
+                    if not bound_device:
+                        await asyncio.to_thread(_db_set, f'keys/{vip_key}/bound_device_id', device_id)
+                    elif bound_device != device_id:
+                        return {"success": False, "error": "등록되지 않은 기기에서의 비정상 접근입니다."}
+                        
+                    tier = key_data.get('tier', 'vip')
+                else:
+                    return {"success": False, "error": "유효하지 않거나 이미 소진된 키입니다."}
+            except Exception:
+                return {"success": False, "error": "키 인증 서버 오류"}
 
     try:
         service = await asyncio.to_thread(_process_download, transfer_code, confirmation_code)
@@ -223,7 +231,6 @@ async def load_save(transfer_code: str = Form(...), confirmation_code: str = For
         summary = await asyncio.to_thread(service.summary)
         current_data = summary.get("current", {})
         
-        # 📌 모든 재화의 현재 수량을 프론트로 반환하도록 추가
         return {
             "success": True,
             "token": token,
@@ -296,7 +303,8 @@ async def modify_and_upload(
         new_tc, new_cc = await asyncio.to_thread(_process_upload, service, catfood, xp, normal_tickets, legend_tickets, platinum_tickets, catfruit, tier)
         
         key_burned = False
-        if tier in ["gold", "vip"] and vip_key:
+        # 어드민 키는 소멸(Burn) 대상에서 제외[cite: 2]
+        if tier in ["gold", "vip"] and vip_key and vip_key != ADMIN_PASSWORD:
             key_data = await asyncio.to_thread(_db_get, f'keys/{vip_key}')
             if key_data and key_data.get('key_type') == 'one_time':
                 await asyncio.to_thread(_db_set, f'keys/{vip_key}/is_active', False)
