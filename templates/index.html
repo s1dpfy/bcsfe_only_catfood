@@ -7,6 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+    <!-- Tesseract.js 라이브러리 추가 -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         @font-face {
             font-family: 'BMDOHYEON_FALLBACK';
@@ -316,6 +318,20 @@
             </section>
 
             <section id="section-load" class="hidden">
+                <!-- 이미지 추출 기능 UI 추가 -->
+                <div class="form-group">
+                    <label style="display: block; margin-bottom: 8px;">스크린샷으로 코드 추출</label>
+                    
+                    <!-- 기존 input은 hidden 클래스로 숨김 -->
+                    <input type="file" id="image_upload" accept="image/*" class="hidden">
+                    
+                    <!-- 대신 label에 기존 버튼 디자인을 입혀서 클릭하게 만듦 -->
+                    <label for="image_upload" class="btn-liquid btn-secondary" style="margin-top: 0; cursor: pointer;">
+                        이미지 파일 선택
+                    </label>
+                </div>
+                <div id="ocr-status" style="font-size: 13px; color: var(--accent-blue); text-align: center; margin-bottom: 12px; height: 16px;"></div>
+
                 <div class="form-group">
                     <label for="transfer_code">이어하기 코드</label>
                     <input type="text" id="transfer_code" placeholder="코드 입력" autocomplete="off" spellcheck="false">
@@ -620,6 +636,57 @@
             } catch (e) { showMessage("서버 통신 중 오류가 발생했습니다.", true);
             } finally { btn.disabled = false; btn.textContent = "수정 및 업로드"; }
         }
+
+        // 이미지 파일 OCR 처리 이벤트 리스너 추가
+        document.getElementById('image_upload').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file || !file.type.startsWith('image/')) return;
+
+            const statusDiv = document.getElementById('ocr-status');
+            const tcInput = document.getElementById('transfer_code');
+            const ccInput = document.getElementById('confirmation_code');
+
+            statusDiv.style.color = 'var(--ink-secondary)';
+            statusDiv.innerText = '이미지 인식 중... 잠시만 기다려주세요.';
+
+            try {
+                const worker = await Tesseract.createWorker('eng+kor');
+                const { data: { text } } = await worker.recognize(file);
+                await worker.terminate();
+
+                const cleanText = text.replace(/\s+/g, '');
+
+                const codeMatch = 
+                    cleanText.match(/(?:코드|code)[:\s]*([a-zA-Z0-9]{8,10})/i) || 
+                    cleanText.match(/([a-zA-Z0-9]{8,10})/);
+
+                const passMatch = 
+                    cleanText.match(/(?:인증|비밀|pass|pw)[:\s]*(\d{4})/i) || 
+                    cleanText.match(/\b(\d{4})\b/);
+
+                let isSuccess = false;
+
+                if (codeMatch && codeMatch[0]) {
+                    tcInput.value = codeMatch[1] || codeMatch[0];
+                    isSuccess = true;
+                }
+                if (passMatch && passMatch[0]) {
+                    ccInput.value = passMatch[1] || passMatch[0];
+                    isSuccess = true;
+                }
+
+                if (isSuccess) {
+                    statusDiv.style.color = '#1A7F37'; // 성공 시 초록색
+                    statusDiv.innerText = '코드 추출 완료!';
+                } else {
+                    statusDiv.style.color = 'var(--ink)';
+                    statusDiv.innerText = '코드를 찾지 못했습니다. 직접 입력해주세요.';
+                }
+            } catch (error) {
+                statusDiv.style.color = 'var(--ink)';
+                statusDiv.innerText = '이미지 인식에 실패했습니다.';
+            }
+        });
     </script>
 </body>
 </html>
