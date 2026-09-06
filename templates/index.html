@@ -146,8 +146,9 @@
             opacity: 1; transition: opacity 0.2s ease;
         }
         .modal-overlay.hidden { opacity: 0; pointer-events: none; display: flex !important; }
-        .modal-box { width: 100%; max-width: 330px; transform: scale(1); transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+        .modal-box { width: 100%; max-width: 330px; transform: scale(1); transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1); max-height: 90vh; overflow-y: auto;}
         .modal-overlay.hidden .modal-box { transform: scale(0.95); }
+        .modal-box::-webkit-scrollbar { display: none; }
         
         .info-section {
             background: rgba(255, 255, 255, 0.45); border-radius: 14px; padding: 12px;
@@ -161,13 +162,12 @@
         .price-list li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .price-list li::before { content: none !important; }
         .price-val { font-weight: bold; color: var(--accent-blue); font-size: 14px;}
-        .price-tip { font-size: 11px; color: #D70015; text-align: center; margin-top: 8px; line-height: 1.3; }
+        .price-tip { font-size: 12px; font-weight: bold; color: #D70015; text-align: center; margin-top: 8px; line-height: 1.3; background:rgba(255,255,255,0.5); padding:8px; border-radius:8px;}
 
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <!-- 차이점 안내 팝업창 -->
     <div id="info-modal" class="modal-overlay hidden" onclick="closeInfo(event)">
         <div class="glass-panel modal-box" onclick="event.stopPropagation()">
             <h2 class="status-title" style="margin-bottom: 12px;">멤버십 안내 및 요금표</h2>
@@ -176,32 +176,44 @@
                 <h3>일반 회원 (무료)</h3>
                 <ul>
                     <li>통조림 최대: 17,000개</li>
-                    <li>XP 최대: 20,000,000</li>
-                    <li>일반 티켓 최대: 50개</li>
+                    <li>XP 최대: 20,000,000 (2천만)</li>
+                    <li>일반 티켓 최대: 15개</li>
                     <li>기타 재화: 수정 불가 🔒</li>
+                </ul>
+            </div>
+            
+            <div class="info-section">
+                <h3>🌟 골드 회원 (키 필요)</h3>
+                <ul>
+                    <li>통조림 최대: 100,000개</li>
+                    <li>XP 최대: 100,000,000 (1억)</li>
+                    <li>일반 티켓: 200개 / 레전드 & 플티: 5개</li>
+                    <li>개다래 (전체) 최대: 20개</li>
                 </ul>
             </div>
 
             <div class="info-section">
-                <h3>VIP 회원 (키 필요)</h3>
+                <h3>👑 VIP 회원 (키 필요)</h3>
                 <ul>
                     <li>통조림 최대: 1,000,000개</li>
-                    <li>XP 최대: 100,000,000</li>
-                    <li>일반 티켓, 레전드 티켓, 플래티넘 최대: 999개</li>
+                    <li>XP 최대: 100,000,000 (1억)</li>
+                    <li>일반, 레전드, 플래티넘 티켓 최대: 999개</li>
                     <li>개다래 (전체) 최대: 998개</li>
                 </ul>
             </div>
 
             <div class="info-section">
-                <h3>VIP 이용권 가격 (계좌/토스 기준)</h3>
+                <h3>회원 이용권 가격</h3>
                 <ul class="price-list">
-                    <li><span>1회용권 (1회 수정시 파기)</span> <span class="price-val">1,990원</span></li>
-                    <li><span>1일 무제한권</span> <span class="price-val">3,990원</span></li>
-                    <li><span>1주일 무제한권</span> <span class="price-val">9,990원</span></li>
-                    <li><span>1달 무제한권</span> <span class="price-val">19,900원</span></li>
-                    <li><span>평생 무제한권</span> <span class="price-val">29,900원</span></li>
+                    <li><span style="color:#58595E;">[골드] 1회용권</span> <span class="price-val">1,990원</span></li>
+                    <li><span style="color:#58595E;">[골드] 1일 무제한권</span> <span class="price-val">4,990원</span></li>
+                    <li><span style="color:#58595E;">[골드] 평생 무제한권</span> <span class="price-val">17,900원</span></li>
+                    <hr style="margin: 6px 0; border:0; border-top:1px dashed rgba(0,0,0,0.15)">
+                    <li><span style="color:#0071E3; font-weight:bold;">[VIP] 1회용권</span> <span class="price-val">2,990원</span></li>
+                    <li><span style="color:#0071E3; font-weight:bold;">[VIP] 1일 무제한권</span> <span class="price-val">5,990원</span></li>
+                    <li><span style="color:#0071E3; font-weight:bold;">[VIP] 평생 무제한권</span> <span class="price-val">29,900원</span></li>
                 </ul>
-                <p class="price-tip">※ 문화상품권 결제시: 1회용(2천원) / 1주(1만원) / 1달(2만원) / 평생(3만원)</p>
+                <p class="price-tip">※ 골드 평생 무제한에서 VIP 평생 무제한으로 업그레이드 시 14,900원만 추가 결제하시면 키를 업그레이드 해드립니다!</p>
             </div>
 
             <button onclick="closeInfo(event)" class="btn-liquid btn-primary" style="margin-top: 14px;">닫기</button>
@@ -228,11 +240,11 @@
                         비회원으로 가입 (무료)
                     </button>
                     <button onclick="selectMembership('member')" class="btn-liquid btn-primary">
-                        회원으로 가입 (VIP 키 필요)
+                        회원으로 가입 (골드/VIP)
                     </button>
                     
                     <button onclick="openInfo()" class="btn-liquid btn-secondary" style="margin-top: 14px;">
-                        일반 / VIP 차이 및 가격 안내
+                        등급별 혜택 및 가격 안내
                     </button>
                     
                     <div style="display: flex; gap: 8px; margin-top: 8px;">
@@ -240,7 +252,7 @@
                             개발자 문의하기
                         </a>
                         <a href="https://open.kakao.com/o/pEVLslHi" target="_blank" rel="noopener noreferrer" class="btn-liquid btn-primary" style="margin-top: 0; background: rgba(0, 113, 227, 0.1); color: var(--accent-blue); border-color: rgba(0, 113, 227, 0.3); box-shadow: none;">
-                            VIP 키 구매하기
+                            키 구매하기
                         </a>
                     </div>
                 </div>
@@ -248,7 +260,7 @@
 
             <section id="section-auth" class="hidden">
                 <div class="form-group">
-                    <label for="vip_key">VIP 인증 키</label>
+                    <label for="vip_key">인증 키 입력</label>
                     <input type="text" id="vip_key" placeholder="발급받은 키를 입력하세요" autocomplete="off">
                 </div>
                 <button onclick="verifyKey()" id="btn-verify" class="btn-liquid btn-primary">키 인증하기</button>
@@ -280,24 +292,27 @@
             </section>
 
             <section id="section-modify" class="hidden">
+                <div class="alert alert-success" style="font-size: 12px; margin-bottom: 12px;">
+                    ※ 빈칸으로 두면 변경하지 않고 기존 값을 그대로 유지합니다.
+                </div>
                 <div class="form-group">
                     <label for="catfood">
                         <span>통조림</span>
                         <span id="label-catfood-max" style="font-size: 11px; color: var(--ink-tertiary);">최대 17,000</span>
                     </label>
-                    <input type="number" id="catfood" placeholder="수량 입력">
+                    <input type="number" id="catfood" placeholder="수정할 수량 입력">
                 </div>
                 <div class="form-group">
                     <label for="xp">
                         <span>XP (경험치)</span>
                         <span id="label-xp-max" style="font-size: 11px; color: var(--ink-tertiary);">최대 20,000,000</span>
                     </label>
-                    <input type="number" id="xp" placeholder="경험치 입력">
+                    <input type="number" id="xp" placeholder="수정할 경험치 입력">
                 </div>
                 <div class="form-group">
                     <label for="normal_tickets">
                         <span>일반 티켓 (냥코)</span>
-                        <span id="label-normal-max" style="font-size: 11px; color: var(--ink-tertiary);">최대 50</span>
+                        <span id="label-normal-max" style="font-size: 11px; color: var(--ink-tertiary);">최대 15</span>
                     </label>
                     <input type="number" id="normal_tickets" placeholder="티켓 수량 입력">
                 </div>
@@ -305,21 +320,21 @@
                 <div class="form-group hidden" id="group-legend-ticket">
                     <label for="legend_tickets">
                         <span>레전드 티켓</span>
-                        <span style="font-size: 11px; color: var(--ink-tertiary);">최대 999</span>
+                        <span id="label-legend-max" style="font-size: 11px; color: var(--ink-tertiary);">최대 999</span>
                     </label>
                     <input type="number" id="legend_tickets" placeholder="티켓 수량 입력">
                 </div>
                 <div class="form-group hidden" id="group-platinum-ticket">
                     <label for="platinum_tickets">
                         <span>플래티넘 티켓</span>
-                        <span style="font-size: 11px; color: var(--ink-tertiary);">최대 999</span>
+                        <span id="label-platinum-max" style="font-size: 11px; color: var(--ink-tertiary);">최대 999</span>
                     </label>
                     <input type="number" id="platinum_tickets" placeholder="티켓 수량 입력">
                 </div>
                 <div class="form-group hidden" id="group-catfruit">
                     <label for="catfruit">
                         <span>개다래 (전체)</span>
-                        <span style="font-size: 11px; color: var(--ink-tertiary);">최대 998</span>
+                        <span id="label-catfruit-max" style="font-size: 11px; color: var(--ink-tertiary);">최대 998</span>
                     </label>
                     <input type="number" id="catfruit" placeholder="수량 일괄 입력">
                 </div>
@@ -358,7 +373,8 @@
 
     <script>
         let sessionToken = ""; 
-        let currentUserType = "guest"; 
+        let currentAuthType = "guest"; 
+        let currentUserTier = "guest"; // 'guest', 'gold', 'vip'
         let currentVipKey = "";
 
         function getOrCreateDeviceId() {
@@ -383,9 +399,13 @@
             navigator.clipboard.writeText(text).then(() => { showMessage("클립보드에 복사되었습니다.", false); }).catch(() => {});
         }
         function selectMembership(type) {
-            currentUserType = type; document.getElementById('section-intro').classList.add('hidden');
+            currentAuthType = type; 
+            document.getElementById('section-intro').classList.add('hidden');
             if (type === 'member') document.getElementById('section-auth').classList.remove('hidden');
-            else document.getElementById('section-load').classList.remove('hidden');
+            else {
+                currentUserTier = "guest";
+                document.getElementById('section-load').classList.remove('hidden');
+            }
         }
         function goBackToIntro() {
             document.getElementById('section-auth').classList.add('hidden');
@@ -417,12 +437,30 @@
                 const data = await response.json();
                 if (data.success) {
                     currentVipKey = keyInput;
+                    currentUserTier = data.tier || 'vip';
+                    
                     document.getElementById('section-auth').classList.add('hidden');
                     document.getElementById('section-load').classList.remove('hidden');
-                    showMessage("VIP 인증이 완료되었습니다.");
-                    document.getElementById('label-catfood-max').textContent = "최대 1,000,000";
-                    document.getElementById('label-xp-max').textContent = "최대 100,000,000";
-                    document.getElementById('label-normal-max').textContent = "최대 999";
+                    
+                    let tierName = currentUserTier === 'gold' ? "골드" : "VIP";
+                    showMessage(`${tierName} 인증이 완료되었습니다.`);
+                    
+                    if (currentUserTier === 'gold') {
+                        document.getElementById('label-catfood-max').textContent = "최대 100,000";
+                        document.getElementById('label-xp-max').textContent = "최대 100,000,000";
+                        document.getElementById('label-normal-max').textContent = "최대 200";
+                        document.getElementById('label-legend-max').textContent = "최대 5";
+                        document.getElementById('label-platinum-max').textContent = "최대 5";
+                        document.getElementById('label-catfruit-max').textContent = "최대 20";
+                    } else if (currentUserTier === 'vip') {
+                        document.getElementById('label-catfood-max').textContent = "최대 1,000,000";
+                        document.getElementById('label-xp-max').textContent = "최대 100,000,000";
+                        document.getElementById('label-normal-max').textContent = "최대 999";
+                        document.getElementById('label-legend-max').textContent = "최대 999";
+                        document.getElementById('label-platinum-max').textContent = "최대 999";
+                        document.getElementById('label-catfruit-max').textContent = "최대 998";
+                    }
+                    
                     document.getElementById('group-legend-ticket').classList.remove('hidden');
                     document.getElementById('group-platinum-ticket').classList.remove('hidden');
                     document.getElementById('group-catfruit').classList.remove('hidden');
@@ -445,8 +483,8 @@
             
             const formData = new FormData();
             formData.append('transfer_code', tc); formData.append('confirmation_code', cc);
-            formData.append('membership_type', currentUserType);
-            if (currentUserType === 'member') {
+            formData.append('membership_type', currentAuthType);
+            if (currentAuthType === 'member') {
                 formData.append('vip_key', currentVipKey);
                 formData.append('device_id', currentDeviceId);
             }
@@ -456,43 +494,62 @@
                 const data = await response.json();
                 if (data.success) {
                     sessionToken = data.token;
-                    document.getElementById('catfood').value = data.catfood;
-                    document.getElementById('xp').value = data.xp;
+                    
+                    // 불러온 값들을 placeholder로 보여주되 실제 입력창은 비워둡니다 (수정 안할 시 유지)
+                    document.getElementById('catfood').placeholder = `현재 값: ${data.catfood}`;
+                    document.getElementById('xp').placeholder = `현재 값: ${data.xp}`;
+                    
                     document.getElementById('section-load').classList.add('hidden');
                     document.getElementById('section-modify').classList.remove('hidden');
-                    showMessage("데이터를 성공적으로 불러왔습니다.");
+                    showMessage("데이터를 성공적으로 불러왔습니다. 수정하지 않을 항목은 빈칸으로 두세요.");
                 } else showMessage(data.error || "불러오기에 실패했습니다.", true);
             } catch (e) { showMessage("서버 통신 중 오류가 발생했습니다.", true);
             } finally { btn.disabled = false; btn.textContent = "세이브 불러오기"; }
         }
 
         async function modifySave() {
-            const catfood = Number(document.getElementById('catfood').value);
-            const xp = Number(document.getElementById('xp').value);
-            const normal = Number(document.getElementById('normal_tickets').value || 0);
-            const btn = document.getElementById('btn-modify');
             const formData = new FormData();
-            formData.append('catfood', catfood); formData.append('xp', xp); formData.append('normal_tickets', normal);
-
-            if (currentUserType === 'member') {
-                const legend = Number(document.getElementById('legend_tickets').value || 0);
-                const platinum = Number(document.getElementById('platinum_tickets').value || 0);
-                const catfruit = Number(document.getElementById('catfruit').value || 0);
-                
-                if (catfood > 1000000) return showMessage("통조림은 최대 1,000,000개까지 설정 가능합니다.", true);
-                if (xp > 100000000) return showMessage("XP는 최대 100,000,000까지 설정 가능합니다.", true);
-                if (normal > 999) return showMessage("일반 티켓은 최대 999개까지 설정 가능합니다.", true);
-                if (legend > 999) return showMessage("레전드 티켓은 최대 999개까지 설정 가능합니다.", true);
-                if (platinum > 999) return showMessage("플래티넘 티켓은 최대 999개까지 설정 가능합니다.", true);
-                if (catfruit > 998) return showMessage("개다래는 최대 998개까지 설정 가능합니다.", true);
-
-                formData.append('legend_tickets', legend); formData.append('platinum_tickets', platinum); formData.append('catfruit', catfruit);
-            } else {
-                if (catfood > 17000) return showMessage("통조림은 최대 17,000개까지 설정 가능합니다.", true);
-                if (xp > 20000000) return showMessage("XP는 최대 20,000,000까지 설정 가능합니다.", true);
-                if (normal > 50) return showMessage("일반 티켓은 최대 50개까지 설정 가능합니다.", true);
+            
+            const getVal = (id) => document.getElementById(id).value;
+            const appendIfNotEmpty = (key, id) => {
+                const val = getVal(id);
+                if(val !== "") formData.append(key, Number(val));
+                return val !== "" ? Number(val) : null;
             }
 
+            const catfood = appendIfNotEmpty('catfood', 'catfood');
+            const xp = appendIfNotEmpty('xp', 'xp');
+            const normal = appendIfNotEmpty('normal_tickets', 'normal_tickets');
+            
+            let legend = null, platinum = null, catfruit = null;
+            if (currentUserTier === 'gold' || currentUserTier === 'vip') {
+                legend = appendIfNotEmpty('legend_tickets', 'legend_tickets');
+                platinum = appendIfNotEmpty('platinum_tickets', 'platinum_tickets');
+                catfruit = appendIfNotEmpty('catfruit', 'catfruit');
+            }
+
+            // 클라이언트 사이드 검증 로직
+            if (currentUserTier === 'gold') {
+                if (catfood !== null && catfood > 100000) return showMessage("통조림은 최대 100,000개까지 가능합니다.", true);
+                if (xp !== null && xp > 100000000) return showMessage("XP는 최대 100,000,000까지 가능합니다.", true);
+                if (normal !== null && normal > 200) return showMessage("일반 티켓은 최대 200개까지 가능합니다.", true);
+                if (legend !== null && legend > 5) return showMessage("레전드 티켓은 최대 5개까지 가능합니다.", true);
+                if (platinum !== null && platinum > 5) return showMessage("플래티넘 티켓은 최대 5개까지 가능합니다.", true);
+                if (catfruit !== null && catfruit > 20) return showMessage("개다래는 최대 20개까지 가능합니다.", true);
+            } else if (currentUserTier === 'vip') {
+                if (catfood !== null && catfood > 1000000) return showMessage("통조림은 최대 1,000,000개까지 가능합니다.", true);
+                if (xp !== null && xp > 100000000) return showMessage("XP는 최대 100,000,000까지 가능합니다.", true);
+                if (normal !== null && normal > 999) return showMessage("일반 티켓은 최대 999개까지 가능합니다.", true);
+                if (legend !== null && legend > 999) return showMessage("레전드 티켓은 최대 999개까지 가능합니다.", true);
+                if (platinum !== null && platinum > 999) return showMessage("플래티넘 티켓은 최대 999개까지 가능합니다.", true);
+                if (catfruit !== null && catfruit > 998) return showMessage("개다래는 최대 998개까지 가능합니다.", true);
+            } else { // guest
+                if (catfood !== null && catfood > 17000) return showMessage("통조림은 최대 17,000개까지 가능합니다.", true);
+                if (xp !== null && xp > 20000000) return showMessage("XP는 최대 20,000,000까지 가능합니다.", true);
+                if (normal !== null && normal > 15) return showMessage("일반 티켓은 최대 15개까지 가능합니다.", true);
+            }
+
+            const btn = document.getElementById('btn-modify');
             btn.disabled = true; btn.textContent = "업로드 중..."; 
             document.getElementById('message-box').classList.add('hidden');
 
