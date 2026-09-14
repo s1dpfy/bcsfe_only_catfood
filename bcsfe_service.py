@@ -18,7 +18,7 @@ class BCSFEService:
         if self.handler is None: raise RuntimeError("먼저 download()를 호출하세요.")
         return self.handler
 
-    def download(self, transfer_code: str, confirmation_code: str, country: str = "kr", game_version: str = "15.5.0") -> bool:
+    def download(self, transfer_code: str, confirmation_code: str, country: str = "kr", game_version: str = "15.6.0") -> bool:
         handler, result = core.ServerHandler.from_codes(
             transfer_code, confirmation_code, core.CountryCode(country), core.GameVersion.from_string(game_version),
         )
