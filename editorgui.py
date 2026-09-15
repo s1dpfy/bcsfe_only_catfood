@@ -20,7 +20,7 @@ class BCSFEService:
             raise RuntimeError("먼저 서버에서 계정을 불러오세요.")
         return self.handler
 
-    def download(self, transfer_code: str, confirmation_code: str, country: str = "kr", game_version: str = "15.5.0") -> bool:
+    def download(self, transfer_code: str, confirmation_code: str, country: str = "kr", game_version: str = "15.6.0") -> bool:
         try:
             country_code = core.CountryCode.from_code(country)
             version = core.GameVersion.from_string(game_version)
