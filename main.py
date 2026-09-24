@@ -82,6 +82,14 @@ async def index(request: Request):
 async def admin_page(request: Request):
     return templates.TemplateResponse(request=request, name="admin.html")
 
+@app.get("/sitemap.xml", include_in_schema=False)
+async def get_sitemap(request: Request):
+    return templates.TemplateResponse(
+        request=request, 
+        name="sitemap.xml", 
+        media_type="application/xml"
+    )
+
 @app.get("/api/lock_status")
 def lock_status(): return {"locked": LOCK_STATE["locked"]}
 
