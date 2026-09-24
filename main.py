@@ -83,12 +83,14 @@ async def admin_page(request: Request):
     return templates.TemplateResponse(request=request, name="admin.html")
 
 @app.get("/sitemap.xml", include_in_schema=False)
-async def get_sitemap(request: Request):
-    return templates.TemplateResponse(
-        request=request, 
-        name="sitemap.xml", 
-        media_type="application/xml"
-    )
+async def get_sitemap():
+    # 프로젝트 루트 디렉토리의 sitemap.xml 파일 경로
+    sitemap_path = os.path.join(os.path.dirname(__file__), "sitemap.xml")
+    
+    if not os.path.exists(sitemap_path):
+        return {"error": "sitemap.xml 파일을 찾을 수 없습니다."}
+        
+    return FileResponse(sitemap_path, media_typ
 
 @app.get("/api/lock_status")
 def lock_status(): return {"locked": LOCK_STATE["locked"]}
