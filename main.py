@@ -1,6 +1,6 @@
 from typing import Optional
 from fastapi import FastAPI, Request, Form, Header, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse,FileResponse
 from fastapi.templating import Jinja2Templates
 from contextlib import asynccontextmanager
 import secrets
