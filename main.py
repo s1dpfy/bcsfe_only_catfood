@@ -1,6 +1,6 @@
 from typing import Optional
 from fastapi import FastAPI, Request, Form, Header, HTTPException
-from fastapi.responses import HTMLResponse,FileResponse
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from contextlib import asynccontextmanager
 import secrets
@@ -81,16 +81,6 @@ async def index(request: Request):
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_page(request: Request):
     return templates.TemplateResponse(request=request, name="admin.html")
-
-@app.get("/sitemap.xml", include_in_schema=False)
-async def get_sitemap():
-    # 프로젝트 루트 디렉토리의 sitemap.xml 파일 경로
-    sitemap_path = os.path.join(os.path.dirname(__file__), "sitemap.xml")
-    
-    if not os.path.exists(sitemap_path):
-        return {"error": "sitemap.xml 파일을 찾을 수 없습니다."}
-        
-    return FileResponse(sitemap_path, media_typ
 
 @app.get("/api/lock_status")
 def lock_status(): return {"locked": LOCK_STATE["locked"]}
