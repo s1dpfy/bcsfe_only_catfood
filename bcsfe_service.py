@@ -48,7 +48,19 @@ class BCSFEService:
             self._require_save().xp = min(value, 20000000)     
 
     def get_np(self): return self._require_save().np
-    def set_np(self, value: int): self._require_save().np = min(value, core.core_data.max_value_manager.np)
+    def set_np(self, value: int, is_vip: bool = False, tier: str = "guest"):
+        limits = {"gold": 1500, "vip": 9999, "catmaster": 9999}
+        limit = limits.get(tier, 0)
+        if limit == 0: return
+        self._require_save().np = min(max(0, value), limit)
+
+    def set_catseyes_all(self, value: int, tier: str = "guest"):
+        limits = {"gold": 20, "vip": 999, "catmaster": 999}
+        limit = limits.get(tier, 0)
+        if limit == 0: return
+        val = min(max(0, value), limit)
+        save = self._require_save()
+        save.catseyes = [val for _ in range(len(save.catseyes))]
 
     def get_leadership(self): return self._require_save().leadership
     def set_leadership(self, value: int): self._require_save().leadership = min(value, core.core_data.max_value_manager.leadership)
@@ -83,6 +95,45 @@ class BCSFEService:
     def get_catfruit(self) -> list[int]: return self._require_save().catfruit
     
     # 🔥 단일 값으로 모든 종류의 개다래 일괄 변경
+    def _item_cap(self, kind: str, tier: str) -> int:
+        if tier == "catmaster":
+            tier = "vip"
+        caps = {
+            "catfruit": {"gold": 20, "vip": 998},
+            "catseyes": {"gold": 20, "vip": 999},
+        }
+        return caps.get(kind, {}).get(tier, 0)
+
+    def set_catfruit_values(self, values: list[int] | None, tier: str, fill: int | None = None):
+        limit = self._item_cap("catfruit", tier)
+        if not limit:
+            return
+        save = self._require_save()
+        n = len(save.catfruit)
+        if fill is not None:
+            save.catfruit = [min(max(0, int(fill)), limit) for _ in range(n)]
+            return
+        out = list(save.catfruit)
+        for i, v in enumerate(values or []):
+            if i < n:
+                out[i] = min(max(0, int(v)), limit)
+        save.catfruit = out
+
+    def set_catseye_values(self, values: list[int] | None, tier: str, fill: int | None = None):
+        limit = self._item_cap("catseyes", tier)
+        if not limit:
+            return
+        save = self._require_save()
+        n = len(save.catseyes)
+        if fill is not None:
+            save.catseyes = [min(max(0, int(fill)), limit) for _ in range(n)]
+            return
+        out = list(save.catseyes)
+        for i, v in enumerate(values or []):
+            if i < n:
+                out[i] = min(max(0, int(v)), limit)
+        save.catseyes = out
+
     def set_catfruit_all(self, value: int, is_vip: bool = False): 
         limit = 998 if is_vip else 50
         val = min(value, limit)
@@ -153,13 +204,52 @@ class BCSFEService:
 
     def search_cats_by_name(self, query: str) -> list[dict]:
         save_file = self._require_save()
-        found_cats = save_file.cats.get_cats_name(save_file, query)
+        query = query.strip().lower()
+        if not query: return []
         result = []
-        for cat in found_cats:
-            names = cat.get_names_cls(save_file)
-            name = names[0] if names else "알 수 없음"
-            result.append({"id": cat.id, "name": f"{name} ({cat.id})"})
-        return result
+        cats = save_file.cats.cats
+        for cat in cats:
+            try:
+                names = cat.get_names_cls(save_file) or []
+                if not names: continue
+                form_names = [n for n in names[:4] if n]
+                full_text = " ".join(form_names).lower()
+                score = sum(1 for ch in query if ch in full_text)
+                if score == 0 and query not in full_text: continue
+                display = " / ".join(form_names) + f" ({cat.id})"
+                result.append({"id": cat.id, "name": display, "score": score})
+            except Exception:
+                continue
+        result.sort(key=lambda x: (-x["score"], len(x["name"])))
+        return result[:40]
+
+    def get_cat_status(self, cat_id: int) -> dict:
+        save = self._require_save()
+        cats = save.cats.cats
+        if not (0 <= cat_id < len(cats)):
+            return {"owned": False, "has_3rd": False, "has_4th": False, "form": 0, "base": 1, "plus": 0}
+        cat = cats[cat_id]
+        # unlocked 또는 upgrade가 존재하면 보유로 판단
+        owned = bool(getattr(cat, "unlocked", False))
+        if not owned and hasattr(cat, "upgrade"):
+            try:
+                if getattr(cat.upgrade, "base", -1) >= 0 or getattr(cat.upgrade, "plus", 0) > 0:
+                    owned = True
+            except Exception:
+                pass
+        form = int(getattr(cat, "current_form", 0))
+        base = 1
+        plus = 0
+        if hasattr(cat, "upgrade"):
+            try:
+                base = int(getattr(cat.upgrade, "base", 0)) + 1
+                plus = int(getattr(cat.upgrade, "plus", 0))
+            except Exception:
+                pass
+        uf = getattr(cat, "unlocked_forms", None)
+        has_4th = bool((uf and len(uf) > 3) or getattr(cat, "fourth_form", False))
+        has_3rd = bool((uf and len(uf) > 2) or getattr(cat, "true_form", False))
+        return {"owned": owned, "form": form, "base": base, "plus": plus, "has_3rd": has_3rd, "has_4th": has_4th}
 
     def unlock_cat(self, cat_id: int):
         cats = self._require_save().cats.cats

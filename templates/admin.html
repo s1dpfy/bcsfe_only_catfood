@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex,nofollow">
     <title>냥슬리 무통 에디터 - 관리자 대시보드</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap');
@@ -140,12 +141,12 @@
             <div class="glass-card">
                 <h2>새 인증 키 발급</h2>
                 <select id="key-type">
-                    <option value="gold_use_1">골드 1회용 (1,990원)</option>
-                    <option value="gold_1">골드 1일 무제한 (4,990원)</option>
-                    <option value="gold_999">골드 평생 무제한 (17,900원)</option>
-                    <option value="vip_use_1">VIP 1회용 (2,990원)</option>
-                    <option value="vip_1">VIP 1일 무제한 (5,990원)</option>
-                    <option value="vip_999">VIP 평생 무제한 (29,900원)</option>
+                    <option value="gold_use_1">골드 1회용 (2,000원)</option>
+                    <option value="gold_1">골드 1일 무제한 (5,000원)</option>
+                    <option value="gold_999">골드 평생 무제한 (20,000원)</option>
+                    <option value="vip_use_1">VIP 1회용 (3,000원)</option>
+                    <option value="vip_1">VIP 1일 무제한 (6,000원)</option>
+                    <option value="vip_999">VIP 평생 무제한 (30,000원)</option>
                 </select>
                 <button onclick="generateVipKey()" id="btn-generate">키 발급하기</button>
                 
@@ -291,8 +292,8 @@
                     ? `<span style="font-size:11px; color:var(--accent-blue);">기기등록됨</span>` 
                     : `<span style="font-size:11px; color:var(--muted);">미등록</span>`;
                 
-                const tierClass = keyObj.tier === 'gold' ? 'tier-gold' : 'tier-vip';
-                const tierLabel = keyObj.tier === 'gold' ? 'GOLD' : 'VIP';
+                const tierClass = keyObj.tier === 'gold' ? 'tier-gold' : (keyObj.tier === 'catmaster' ? 'tier-vip' : 'tier-vip');
+                const tierLabel = keyObj.tier === 'gold' ? 'GOLD' : (keyObj.tier === 'catmaster' ? 'CAT' : 'VIP');
 
                 const div = document.createElement('div');
                 div.className = 'key-row' + (isExpired ? ' expired' : '');
