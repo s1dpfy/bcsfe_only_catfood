@@ -71,11 +71,9 @@ th{color:var(--sub);font-weight:500}
 <body>
 <div id="modal-discord" class="modal">
   <div class="sheet" onclick="event.stopPropagation()">
-    <h2>디스코드</h2>
-    <p class="hint">서버에 들어온 뒤 문의하면 VIP 1회용 키 추첨 기회가 있습니다.</p>
-    <a class="btn discord" href="https://discord.gg/XY3gwQejy" target="_blank" rel="noopener">디스코드 입장</a>
-    <div class="timer"><b id="discord-timer"></b></div>
-    <button id="btn-discord-close" class="btn" disabled onclick="closeDiscord()"><span>닫기 (5)</span></button>
+    <h2>디스코드 서버 가입</h2>
+    <p class="hint" id="discord-msg">승인하면 서버에 자동으로 들어갑니다.</p>
+    <a class="btn discord" href="/api/discord/login">디스코드 서버 가입</a>
   </div>
 </div>
 
@@ -97,8 +95,8 @@ th{color:var(--sub);font-weight:500}
           <button class="btn" onclick="openInfo('guide')">사용법</button>
         </div>
         <div class="grid">
-          <a class="btn" href="https://open.kakao.com/me/nyangs1" target="_blank" rel="noopener">문의</a>
-          <a class="btn" href="https://open.kakao.com/o/sSBOMwMi" target="_blank" rel="noopener">구매</a>
+          <a class="btn" href="https://open.kakao.com/me/nyangs1" target="_blank" rel="noopener">개발자 문의</a>
+          <a class="btn" href="https://open.kakao.com/o/sSBOMwMi" target="_blank" rel="noopener">키 구매</a>
         </div>
         <a class="btn discord" href="https://discord.gg/XY3gwQejy" target="_blank" rel="noopener">디스코드</a>
       </div>
@@ -398,18 +396,17 @@ async function modifySave(){
   }catch{ logAction("서버 통신 오류"); }
   finally{ btn.disabled=false; label.textContent="변경사항 업로드"; }
 }
-(function(){
-  const bar=document.getElementById("discord-timer");
-  const btn=document.getElementById("btn-discord-close");
-  const label=btn.querySelector("span");
-  let t=5;
-  setTimeout(()=>bar.style.width="100%",40);
-  const iv=setInterval(()=>{
-    t--; label.textContent="닫기 ("+Math.max(t,0)+")";
-    if(t<=0){ clearInterval(iv); discordCanClose=true; btn.disabled=false; label.textContent="닫기"; }
-  },1000);
+(async function(){
+  const q=new URLSearchParams(location.search).get("discord");
+  const msg=document.getElementById("discord-msg");
+  if(q==="missing") msg.textContent="아직 서버에 들어오지 못했습니다. 다시 승인하세요.";
+  else if(q==="error") msg.textContent="디스코드 확인에 실패했습니다. 다시 시도하세요.";
+  try{
+    const r=await fetch("/api/discord/status");
+    const d=await r.json();
+    if(d.ok) document.getElementById("modal-discord").classList.add("hidden");
+  }catch{}
 })();
-function closeDiscord(){ if(discordCanClose) document.getElementById("modal-discord").classList.add("hidden"); }
 </script>
 </body>
 </html>
