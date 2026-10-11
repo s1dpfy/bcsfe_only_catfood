@@ -13,11 +13,11 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://catfood.sldpfy.me/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111111'/%3E%3Cpath fill='%23f4f4f5' d='M12 30l6-18 10 14h8l10-14 6 18c4 6 4 20-20 24S8 36 12 30z'/%3E%3Ccircle cx='24' cy='34' r='3' fill='%23111'/%3E%3Ccircle cx='40' cy='34' r='3' fill='%23111'/%3E%3C/svg%3E">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#000;--card:#141414;--line:#2a2a2a;--ink:#f5f5f5;--sub:#c8c8c8;--ok:#3dd68c}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{background:var(--bg);color:var(--ink);font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-size:18px;line-height:1.35}
+html,body{background:var(--bg);color:var(--ink);font-family:'Nanum Gothic',system-ui,sans-serif;font-size:18px;line-height:1.35}
 button,input,a{font:inherit;color:inherit}
 button{cursor:pointer}
 .app{max-width:520px;margin:0 auto;padding:16px 14px 28px}
@@ -110,6 +110,8 @@ th{color:var(--sub);font-weight:500}
           <p style="color:#ccc;font-size:15px;margin-top:6px">통조림 최대 10,000 · 냥코티켓 · XP 이용 제한</p>
         </div>
         <button class="choice" onclick="selectMembership('guest')"><b>일반 (제한)</b><span>사용하기</span></button>
+        <button class="choice" onclick="selectMembership('gold')"><b>골드</b><span>사용하기</span></button>
+        <button class="choice" onclick="selectMembership('vip')"><b>VIP</b><span>사용하기</span></button>
         <div class="thirds">
           <button class="btn" onclick="openInfo('benefits')">혜택</button>
           <button class="btn" onclick="openInfo('pricing')">가격</button>
