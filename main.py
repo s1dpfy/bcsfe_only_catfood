@@ -120,6 +120,12 @@ def _discord_ok(request: Request) -> bool:
     expect = hmac.new(_DISCORD_KEY, user_id.encode(), hashlib.sha256).hexdigest()
     return hmac.compare_digest(expect, sig)
 
+def _is_skip_discord(request: Request) -> bool:
+    return request.cookies.get("skip_discord") == "1"
+
+def _access_ok(request: Request) -> bool:
+    return _discord_ok(request) or _is_skip_discord(request)
+
 def _discord_need():
     return {"success": False, "error": "디스코드 서버에 가입한 뒤 이용하세요."}
 
@@ -213,16 +219,20 @@ def discord_status(request: Request):
     return {"ok": _discord_ok(request), "invite": DISCORD_INVITE}
 
 CAPS = {
-    "guest": {"catfood": 17000, "xp": 20000000, "normal": 15},
+    "guest": {"catfood": 25000, "xp": 20000000, "normal": 15},
     "gold": {"catfood": 100000, "xp": 100000000, "normal": 200, "legend": 5, "platinum": 5, "catfruit": 20, "np": 1500, "catseyes": 20},
     "vip": {"catfood": 1000000, "xp": 100000000, "normal": 999, "legend": 999, "platinum": 999, "catfruit": 998, "np": 9999, "catseyes": 999},
 }
+RESTRICTED_CAPS = {"catfood": 10000, "xp": 0, "normal": 0}
 
 def _tier_name(tier):
     return "vip" if tier == "catmaster" else tier
 
-def _over_cap(tier, **vals):
-    caps = CAPS.get(_tier_name(tier), CAPS["guest"])
+def _over_cap(tier, restricted=False, **vals):
+    if restricted and tier == "guest":
+        caps = RESTRICTED_CAPS
+    else:
+        caps = CAPS.get(_tier_name(tier), CAPS["guest"])
     for key, value in vals.items():
         if value is None:
             continue
@@ -316,7 +326,7 @@ async def reset_key_device(admin_password: str = Form(...), vip_key: str = Form(
 
 @app.post("/api/verify_key")
 async def verify_key(request: Request, vip_key: str = Form(...), device_id: str = Form(""), requested_tier: str = Form("vip")):
-    if not _discord_ok(request):
+    if not _access_ok(request):
         return _discord_need()
     try:
         tier, err = await _resolve_key(vip_key, device_id, requested_tier)
@@ -332,10 +342,11 @@ def _process_download(tc: str, cc: str):
 async def load_save(request: Request, transfer_code: str = Form(...), confirmation_code: str = Form(...),
                     membership_type: str = Form("guest"), vip_key: str = Form(None),
                     device_id: str = Form(""), requested_tier: str = Form("vip")):
-    if not _discord_ok(request):
+    if not _access_ok(request):
         return _discord_need()
     if LOCK_STATE["locked"]:
         return {"success": False, "error": "에디터가 잠금 상태입니다."}
+    restricted = _is_skip_discord(request)
     tier = "guest"
     if membership_type != "guest" and vip_key:
         tier, err = await _resolve_key(vip_key, device_id, requested_tier)
@@ -346,7 +357,7 @@ async def load_save(request: Request, transfer_code: str = Form(...), confirmati
         if not service:
             return {"success": False, "error": "이어하기 코드 또는 인증 번호가 올바르지 않거나, 게임 버전이 맞지 않습니다."}
         token = secrets.token_hex(16)
-        SESSIONS[token] = {"service": service, "last_active": time.time(), "tier": tier, "vip_key": vip_key}
+        SESSIONS[token] = {"service": service, "last_active": time.time(), "tier": tier, "vip_key": vip_key, "restricted": restricted}
         summary = await asyncio.to_thread(service.summary)
         current_data = summary.get("current", {})
         return {
@@ -412,7 +423,7 @@ async def modify_and_upload(
     catseyes_each: Optional[str] = Form(None),
     x_session_token: str = Header(None),
 ):
-    if not _discord_ok(request):
+    if not _access_ok(request):
         return _discord_need()
     if LOCK_STATE["locked"]:
         return {"success": False, "error": "에디터가 잠금 상태입니다."}
@@ -420,12 +431,13 @@ async def modify_and_upload(
     service = session_data["service"]
     tier = session_data.get("tier", "guest")
     vip_key = session_data.get("vip_key")
+    restricted = session_data.get("restricted", False)
     try:
         fruit_list = _as_int_list(catfruit_each) if catfruit_each else None
         eye_list = _as_int_list(catseyes_each) if catseyes_each else None
     except Exception:
         return {"success": False, "error": "수량 형식이 잘못되었습니다."}
-    if _over_cap(tier, catfood=catfood, xp=xp, normal=normal_tickets, legend=legend_tickets, platinum=platinum_tickets, catfruit=fruit_list if fruit_list is not None else catfruit, np=np, catseyes=eye_list if eye_list is not None else catseyes):
+    if _over_cap(tier, restricted=restricted, catfood=catfood, xp=xp, normal=normal_tickets, legend=legend_tickets, platinum=platinum_tickets, catfruit=fruit_list if fruit_list is not None else catfruit, np=np, catseyes=eye_list if eye_list is not None else catseyes):
         return {"success": False, "error": "등급 최대 한도를 넘었습니다."}
     try:
         new_tc, new_cc = await asyncio.to_thread(

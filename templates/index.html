@@ -13,11 +13,11 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://catfood.sldpfy.me/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111111'/%3E%3Cpath fill='%23f4f4f5' d='M12 30l6-18 10 14h8l10-14 6 18c4 6 4 20-20 24S8 36 12 30z'/%3E%3Ccircle cx='24' cy='34' r='3' fill='%23111'/%3E%3Ccircle cx='40' cy='34' r='3' fill='%23111'/%3E%3C/svg%3E">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#000;--card:#141414;--line:#2a2a2a;--ink:#f5f5f5;--sub:#c8c8c8;--ok:#3dd68c}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:18px;line-height:1.35}
+html,body{background:var(--bg);color:var(--ink);font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-size:18px;line-height:1.35}
 button,input,a{font:inherit;color:inherit}
 button{cursor:pointer}
 .app{max-width:520px;margin:0 auto;padding:16px 14px 28px}
@@ -74,6 +74,7 @@ th{color:var(--sub);font-weight:500}
     <h2>디스코드 서버 가입</h2>
     <p class="hint" id="discord-msg">승인하면 서버에 자동으로 들어갑니다.</p>
     <a class="btn discord" href="/api/discord/login">디스코드 서버 가입</a>
+    <button class="btn" style="margin-top:10px;background:#333;color:#fff;border-color:#555" onclick="skipDiscord()">디코 로그인 없이 하기</button>
   </div>
 </div>
 
@@ -86,7 +87,7 @@ th{color:var(--sub);font-weight:500}
 
     <section id="section-intro" class="section active">
       <div class="stack">
-        <button class="choice" onclick="selectMembership('guest')"><b>일반</b><span>사용하기</span></button>
+        <button class="choice" onclick="selectMembership('guest')"><b>일반 (비회원)</b><span>사용하기</span></button>
         <button class="choice" onclick="selectMembership('gold')"><b>골드</b><span>사용하기</span></button>
         <button class="choice" onclick="selectMembership('vip')"><b>VIP</b><span>사용하기</span></button>
         <div class="thirds">
@@ -99,6 +100,26 @@ th{color:var(--sub);font-weight:500}
           <a class="btn" href="https://open.kakao.com/o/sSBOMwMi" target="_blank" rel="noopener">키 구매</a>
         </div>
         <a class="btn discord" href="https://discord.gg/XY3gwQejy" target="_blank" rel="noopener">디스코드</a>
+      </div>
+    </section>
+
+    <section id="section-intro-restricted" class="section">
+      <div class="stack">
+        <div style="background:#3a1a1a;border:1px solid #ff453a;border-radius:12px;padding:14px;text-align:center;margin-bottom:8px">
+          <strong style="color:#ff6b6b;font-size:17px">디스코드로 로그인 하지 않으면 보상이 사라져요!</strong>
+          <p style="color:#ccc;font-size:15px;margin-top:6px">통조림 최대 10,000 · 냥코티켓 · XP 이용 제한</p>
+        </div>
+        <button class="choice" onclick="selectMembership('guest')"><b>일반 (제한)</b><span>사용하기</span></button>
+        <div class="thirds">
+          <button class="btn" onclick="openInfo('benefits')">혜택</button>
+          <button class="btn" onclick="openInfo('pricing')">가격</button>
+          <button class="btn" onclick="openInfo('guide')">사용법</button>
+        </div>
+        <div class="grid">
+          <a class="btn" href="https://open.kakao.com/me/nyangs1" target="_blank" rel="noopener">개발자 문의</a>
+          <a class="btn" href="https://open.kakao.com/o/sSBOMwMi" target="_blank" rel="noopener">키 구매</a>
+        </div>
+        <a class="btn discord" href="/api/discord/login">디스코드 로그인하고 혜택 받기</a>
       </div>
     </section>
 
@@ -174,7 +195,7 @@ th{color:var(--sub);font-weight:500}
     <h2>혜택</h2>
     <table>
       <tr><th>항목</th><th>일반</th><th>골드</th><th>VIP</th></tr>
-      <tr><td>통조림</td><td>1.7만</td><td>10만</td><td>100만</td></tr>
+      <tr><td>통조림</td><td>2.5만</td><td>10만</td><td>100만</td></tr>
       <tr><td>XP</td><td>2천만</td><td>1억</td><td>1억</td></tr>
       <tr><td>일반 티켓</td><td>15</td><td>200</td><td>999</td></tr>
       <tr><td>레전드 티켓</td><td>-</td><td>5</td><td>999</td></tr>
@@ -202,13 +223,15 @@ th{color:var(--sub);font-weight:500}
 <script>
 let sessionToken="", currentAuthType="guest", currentUserTier="guest", currentVipKey="", selectedTier="guest", currentDeviceId="";
 let pending={}, discordCanClose=false, currentSave={}, owned={};
+let noDiscordMode=false;
 const FRUIT=["보라 개다래나무의 씨앗","빨강 개다래나무의 씨앗","파랑 개다래나무의 씨앗","초록 개다래나무의 씨앗","노랑 개다래나무의 씨앗","보라 개다래 열매","빨강 개다래 열매","파랑 개다래 열매","초록 개다래 열매","노랑 개다래 열매","무지개 개다래 열매","고대 개다래나무의 씨앗","고대 개다래 열매","무지개 개다래나무의 씨앗","황금 개다래 열매","악마 개다래나무의 씨앗","악마 개다래 열매","황금 개다래나무의 씨앗","자수석","홍수석","청수석","녹수석","황수석","자수석 결정","홍수석 결정","청수석 결정","녹수석 결정","황수석 결정","무지개 수석"];
 const EYES=["캣츠아이【EX】","캣츠아이【레어】","캣츠아이【슈퍼 레어】","캣츠아이【울트라 슈퍼 레어】","캣츠아이【레전드】","캣츠아이【다크】"];
 const LIMITS={
-  guest:{catfood:17000,xp:20000000,normal:15},
+  guest:{catfood:25000,xp:20000000,normal:15},
   gold:{catfood:100000,xp:100000000,normal:200,legend:5,platinum:5,catfruit:20,np:1500,catseyes:20},
   vip:{catfood:1000000,xp:100000000,normal:999,legend:999,platinum:999,catfruit:998,np:9999,catseyes:999}
 };
+const RESTRICTED_LIMITS={catfood:10000,xp:0,normal:0};
 
 function liftForKeyboard(){
   const vv=window.visualViewport;
@@ -236,16 +259,23 @@ function showSection(id){
 }
 function logAction(msg){ document.getElementById("action-log").textContent=msg; }
 function showMessage(msg){ logAction(msg); }
-function goBack(){ logAction(""); showSection("section-intro"); }
+function goBack(){ logAction(""); showSection(noDiscordMode ? "section-intro-restricted" : "section-intro"); }
 function openInfo(type){ document.getElementById("modal-"+type).classList.remove("hidden"); }
 function copyText(id){ navigator.clipboard.writeText(document.getElementById(id).innerText).then(()=>logAction("복사했습니다")); }
-function cap(){ return LIMITS[currentUserTier]||LIMITS.guest; }
+function cap(){ 
+  if(noDiscordMode && currentUserTier==="guest") return RESTRICTED_LIMITS;
+  return LIMITS[currentUserTier]||LIMITS.guest; 
+}
 function applyTierUi(){
   const paid=currentUserTier==="gold"||currentUserTier==="vip";
+  const restricted=noDiscordMode && currentUserTier==="guest";
   ["btn-legend","btn-platinum","btn-catfruit","btn-np","btn-catseyes"].forEach(id=>{
     document.getElementById(id).classList.toggle("hidden", !paid);
   });
-  const names={guest:"일반",gold:"골드",vip:"VIP"};
+  // 제한 모드에서 XP, 일반 티켓 숨김
+  document.querySelector('button[onclick="openResource(\'xp\')"]').classList.toggle("hidden", restricted);
+  document.querySelector('button[onclick="openResource(\'normal\')"]').classList.toggle("hidden", restricted);
+  const names={guest: restricted ? "일반(제한)" : "일반",gold:"골드",vip:"VIP"};
   document.getElementById("tier-line").textContent=(names[currentUserTier]||"일반")+" · 눌러서 수량을 넣으세요.";
 }
 const FIELDS={catfood:"catfood",xp:"xp",normal:"normal_tickets",legend:"legend_tickets",platinum:"platinum_tickets",np:"np",catfruit:"catfruit",catseyes:"catseyes"};
@@ -257,6 +287,10 @@ function amountOf(type){
   return owned[type];
 }
 function selectMembership(type){
+  if(noDiscordMode && type!=="guest"){
+    logAction("디코 로그인 없이 하기에서는 일반만 이용 가능합니다.");
+    return;
+  }
   selectedTier=type;
   if(type==="gold"||type==="vip"){
     currentAuthType="member";
@@ -265,6 +299,14 @@ function selectMembership(type){
   } else {
     currentAuthType="guest"; currentUserTier="guest"; applyTierUi(); showSection("section-load");
   }
+}
+function skipDiscord(){
+  noDiscordMode=true;
+  document.cookie="skip_discord=1; path=/; max-age=86400; samesite=lax";
+  document.getElementById("modal-discord").classList.add("hidden");
+  alert("디스코드로 로그인 하지 않으면 보상이 사라져요!\n통조림 최대 개수제한 25000에서 10000, 냥코티켓, XP 이용제한");
+  showSection("section-intro-restricted");
+  logAction("제한 모드로 진행합니다.");
 }
 async function verifyKey(){
   const key=document.getElementById("vip_key").value.trim();
@@ -404,7 +446,12 @@ async function modifySave(){
   try{
     const r=await fetch("/api/discord/status");
     const d=await r.json();
-    if(d.ok) document.getElementById("modal-discord").classList.add("hidden");
+    if(d.ok){
+      document.getElementById("modal-discord").classList.add("hidden");
+      document.cookie="skip_discord=; path=/; max-age=0";
+      noDiscordMode=false;
+      showSection("section-intro");
+    }
   }catch{}
 })();
 </script>

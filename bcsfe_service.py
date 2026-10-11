@@ -38,7 +38,7 @@ class BCSFEService:
         if is_vip:
             self._require_save().catfood = min(value, 1000000) 
         else:
-            self._require_save().catfood = min(value, 17000)   
+            self._require_save().catfood = min(value, 25000)   
 
     def get_xp(self): return self._require_save().xp
     def set_xp(self, value: int, is_vip: bool = False): 
