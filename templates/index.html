@@ -289,10 +289,6 @@ function amountOf(type){
   return owned[type];
 }
 function selectMembership(type){
-  if(noDiscordMode && type!=="guest"){
-    logAction("디코 로그인 없이 하기에서는 일반만 이용 가능합니다.");
-    return;
-  }
   selectedTier=type;
   if(type==="gold"||type==="vip"){
     currentAuthType="member";
