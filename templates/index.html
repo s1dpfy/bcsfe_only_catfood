@@ -17,7 +17,9 @@
 <style>
 :root{--bg:#000;--card:#141414;--line:#2a2a2a;--ink:#f5f5f5;--sub:#c8c8c8;--ok:#3dd68c}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{background:var(--bg);color:var(--ink);font-family:'Nanum Gothic',system-ui,sans-serif;font-size:18px;line-height:1.35}
+html,body{background:var(--bg);color:var(--ink);font-family:'Nanum Gothic',system-ui,sans-serif;font-size:18px;line-height:1.35;overflow-x:hidden}
+::-webkit-scrollbar{width:0;height:0;display:none}
+*{scrollbar-width:none;-ms-overflow-style:none}
 button,input,a{font:inherit;color:inherit}
 button{cursor:pointer}
 .app{max-width:520px;margin:0 auto;padding:16px 14px 28px}
@@ -69,6 +71,16 @@ th{color:var(--sub);font-weight:400}
 </style>
 </head>
 <body>
+<div id="modal-skip-warning" class="modal hidden">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <h2>주의</h2>
+    <p class="hint" style="font-size:17px;line-height:1.6">디스코드로 로그인 하지 않으면 보상이 사라져요!<br>통조림 최대 개수제한 25000에서 10000, 냥코티켓, XP 이용제한</p>
+    <div class="timer"><b id="skip-timer-bar"></b></div>
+    <p id="skip-countdown" style="text-align:center;color:var(--sub);margin-bottom:12px">10초 후 진행 가능</p>
+    <button class="btn primary" id="btn-skip-confirm" disabled onclick="confirmSkip()">확인</button>
+  </div>
+</div>
+
 <div id="modal-discord" class="modal">
   <div class="sheet" onclick="event.stopPropagation()">
     <h2>디스코드 서버 가입</h2>
@@ -105,10 +117,6 @@ th{color:var(--sub);font-weight:400}
 
     <section id="section-intro-restricted" class="section">
       <div class="stack">
-        <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:14px;text-align:center;margin-bottom:8px">
-          <span style="color:#f5f5f5;font-size:18px">디스코드로 로그인 하지 않으면 보상이 사라져요!</span>
-          <p style="color:#c8c8c8;font-size:15px;margin-top:6px">통조림 최대 10,000 · 냥코티켓 · XP 이용 제한</p>
-        </div>
         <button class="choice" onclick="selectMembership('guest')"><b>일반 (제한)</b><span>사용하기</span></button>
         <button class="choice" onclick="selectMembership('gold')"><b>골드</b><span>사용하기</span></button>
         <button class="choice" onclick="selectMembership('vip')"><b>VIP</b><span>사용하기</span></button>
@@ -302,7 +310,25 @@ function skipDiscord(){
   noDiscordMode=true;
   document.cookie="skip_discord=1; path=/; max-age=86400; samesite=lax";
   document.getElementById("modal-discord").classList.add("hidden");
-  alert("디스코드로 로그인 하지 않으면 보상이 사라져요!\n통조림 최대 개수제한 25000에서 10000, 냥코티켓, XP 이용제한");
+  const modal=document.getElementById("modal-skip-warning");
+  modal.classList.remove("hidden");
+  const bar=document.getElementById("skip-timer-bar");
+  const countEl=document.getElementById("skip-countdown");
+  const btn=document.getElementById("btn-skip-confirm");
+  bar.style.width="0%";
+  setTimeout(()=>bar.style.width="100%", 50);
+  let sec=10;
+  const iv=setInterval(()=>{
+    sec--;
+    countEl.textContent=sec>0 ? sec+"초 후 진행 가능" : "진행 가능";
+    if(sec<=0){
+      clearInterval(iv);
+      btn.disabled=false;
+    }
+  },1000);
+}
+function confirmSkip(){
+  document.getElementById("modal-skip-warning").classList.add("hidden");
   showSection("section-intro-restricted");
   logAction("제한 모드로 진행합니다.");
 }
