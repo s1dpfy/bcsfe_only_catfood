@@ -42,6 +42,7 @@ h1{font-size:32px;font-weight:400;letter-spacing:-.4px;display:flex;align-items:
 .choice span{color:var(--sub);font-size:15px;font-weight:400}
 .primary{background:#fff;color:#000;border-color:#fff}
 .discord{background:#5865f2;color:#fff;border-color:#5865f2}
+.instagram{background:#e1306c;color:#fff;border-color:#e1306c}
 .input{width:100%;height:52px;margin-top:8px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:#0c0c0c;font-size:18px}
 h2{font-size:26px;font-weight:400;margin-bottom:4px;display:flex;align-items:center;gap:8px}
 .hint{color:var(--sub);font-size:16px;margin-bottom:10px}
@@ -71,6 +72,16 @@ th{color:var(--sub);font-weight:400}
 </style>
 </head>
 <body>
+<div id="modal-instagram" class="modal">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <h2>인스타그램 이벤트</h2>
+    <p class="hint" style="font-size:17px;line-height:1.6">인스타그램을 팔로우하고 문의하기를 눌러 인증하면<br>VIP 1회권 당첨 기회에 참여할 수 있습니다!</p>
+    <a class="btn instagram" href="https://www.instagram.com/s1dpfy" target="_blank" rel="noopener">인스타그램 팔로우</a>
+    <a class="btn" href="https://open.kakao.com/me/nyangs1" target="_blank" rel="noopener" style="margin-top:8px">문의하기 (인증)</a>
+    <button class="btn" style="margin-top:10px" onclick="closeInstagram()">닫기</button>
+  </div>
+</div>
+
 <div id="modal-skip-warning" class="modal hidden">
   <div class="sheet" onclick="event.stopPropagation()">
     <h2>주의</h2>
@@ -81,7 +92,7 @@ th{color:var(--sub);font-weight:400}
   </div>
 </div>
 
-<div id="modal-discord" class="modal">
+<div id="modal-discord" class="modal hidden">
   <div class="sheet" onclick="event.stopPropagation()">
     <h2>디스코드 서버 가입</h2>
     <p class="hint" id="discord-msg">승인하면 서버에 자동으로 들어갑니다.</p>
@@ -93,6 +104,7 @@ th{color:var(--sub);font-weight:400}
 <div class="app">
   <h1>냥슬리 에디터</h1>
   <p class="sub">냥코 대전쟁 세이브 수정</p>
+  <p class="sub" style="font-size:14px;margin-top:-8px;color:var(--sub)">made by nyansl</p>
   <div class="panel">
     <div id="action-log" class="msg"></div>
     <div id="message-box" class="alert"></div>
@@ -111,6 +123,7 @@ th{color:var(--sub);font-weight:400}
           <a class="btn" href="https://open.kakao.com/me/nyangs1" target="_blank" rel="noopener">개발자 문의</a>
           <a class="btn" href="https://open.kakao.com/o/sSBOMwMi" target="_blank" rel="noopener">키 구매</a>
         </div>
+        <a class="btn instagram" href="https://www.instagram.com/s1dpfy" target="_blank" rel="noopener">제작자 인스타 팔로우</a>
         <a class="btn discord" href="https://discord.gg/XY3gwQejy" target="_blank" rel="noopener">디스코드</a>
       </div>
     </section>
@@ -129,6 +142,7 @@ th{color:var(--sub);font-weight:400}
           <a class="btn" href="https://open.kakao.com/me/nyangs1" target="_blank" rel="noopener">개발자 문의</a>
           <a class="btn" href="https://open.kakao.com/o/sSBOMwMi" target="_blank" rel="noopener">키 구매</a>
         </div>
+        <a class="btn instagram" href="https://www.instagram.com/s1dpfy" target="_blank" rel="noopener">제작자 인스타 팔로우</a>
         <a class="btn discord" href="/api/discord/login">디스코드 로그인하고 혜택 받기</a>
       </div>
     </section>
@@ -332,6 +346,11 @@ function confirmSkip(){
   showSection("section-intro-restricted");
   logAction("제한 모드로 진행합니다.");
 }
+function closeInstagram(){
+  document.getElementById("modal-instagram").classList.add("hidden");
+  // 인스타 팝업 닫은 후 디스코드 팝업 표시
+  document.getElementById("modal-discord").classList.remove("hidden");
+}
 async function verifyKey(){
   const key=document.getElementById("vip_key").value.trim();
   if(!key) return logAction("키를 입력하세요");
@@ -471,6 +490,7 @@ async function modifySave(){
     const r=await fetch("/api/discord/status");
     const d=await r.json();
     if(d.ok){
+      document.getElementById("modal-instagram").classList.add("hidden");
       document.getElementById("modal-discord").classList.add("hidden");
       document.cookie="skip_discord=; path=/; max-age=0";
       noDiscordMode=false;

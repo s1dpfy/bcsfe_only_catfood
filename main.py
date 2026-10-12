@@ -41,7 +41,7 @@ if target_file and not firebase_admin._apps:
 SESSIONS = {}
 SESSION_TIMEOUT = 300
 LOCK_STATE = {"locked": False}
-ADMIN_PASSWORD = "101010"
+ADMIN_PASSWORD = "110923"
 
 async def session_cleanup_task():
     while True:
