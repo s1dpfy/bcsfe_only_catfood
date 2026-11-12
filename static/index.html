@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>냥슬리 에디터 | 냥코 대전쟁 세이브 수정</title>
+<meta name="description" content="냥코 대전쟁 세이브를 이어하기 코드로 수정합니다. 통조림, XP, 티켓, 개다래, 캣츠아이, NP.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://catfood.sldpfy.me/">
+<meta name="google-site-verification" content="LrI8ctaUVQONUvTCieY5vckokFhiNICqsyu5X0NFBgM">
+<meta property="og:title" content="냥슬리 에디터">
+<meta property="og:description" content="냥코 대전쟁 세이브 수정">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://catfood.sldpfy.me/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111111'/%3E%3Cpath fill='%23f4f4f5' d='M12 30l6-18 10 14h8l10-14 6 18c4 6 4 20-20 24S8 36 12 30z'/%3E%3Ccircle cx='24' cy='34' r='3' fill='%23111'/%3E%3Ccircle cx='40' cy='34' r='3' fill='%23111'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/app.css">
+<script src="https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.js"></script>
+</head>
+<body>
+<div class="app">
+  <h1>냥슬리 에디터</h1>
+  <p class="sub">냥코 대전쟁 세이브 수정</p>
+  <p class="sub credit">made by nyansl</p>
+  <div class="panel">
+    <div id="action-log" class="msg"></div>
+    <div id="dl-box" class="dl hidden">
+      <p class="hint" id="dl-label">받는 중</p>
+      <div class="bar"><b id="dl-bar"></b></div>
+    </div>
+
+    <section id="section-intro" class="section active">
+      <button class="btn primary" id="btn-start" type="button">에디터 이용시작</button>
+    </section>
+
+    <section id="section-load" class="section">
+      <h2>세이브 불러오기</h2>
+      <p class="hint">이어하기 코드와 인증 번호만 입력합니다.</p>
+      <input id="transfer_code" class="input" placeholder="이어하기 코드" autocomplete="off">
+      <input id="confirmation_code" class="input" placeholder="인증 번호" maxlength="6" autocomplete="off">
+      <div class="stack gap">
+        <button class="btn primary" id="btn-load" type="button">불러오기</button>
+        <button class="btn" type="button" data-back>메인으로</button>
+      </div>
+    </section>
+
+    <section id="section-modify" class="section">
+      <h2>수정</h2>
+      <p class="hint" id="tier-line">항목을 누르면 수량 창이 열립니다.</p>
+      <div class="grid" id="resource-grid">
+        <button class="btn" type="button" data-resource="catfood">통조림</button>
+        <button class="btn" type="button" data-resource="xp">XP</button>
+        <button class="btn" type="button" data-resource="normal">일반 티켓</button>
+        <button class="btn" type="button" data-resource="legend">레전드 티켓</button>
+        <button class="btn" type="button" data-resource="platinum">플래티넘 티켓</button>
+        <button class="btn" type="button" data-resource="catfruit">개다래</button>
+        <button class="btn" type="button" data-resource="np">NP</button>
+        <button class="btn" type="button" data-resource="catseyes">캣츠아이</button>
+      </div>
+      <div class="stack gap">
+        <button class="btn primary" id="btn-upload" type="button"><span>변경사항 업로드</span></button>
+        <button class="btn" type="button" data-back>메인으로</button>
+      </div>
+    </section>
+
+    <section id="section-result" class="section">
+      <h2>업로드 완료</h2>
+      <p class="hint" id="result-desc">새 코드로 게임을 이어하세요. 칸을 누르면 복사됩니다.</p>
+      <div class="cred" data-copy="new_transfer_code"><small>이어하기 코드</small><strong id="new_transfer_code"></strong></div>
+      <div class="cred" data-copy="new_confirmation_code"><small>인증 번호</small><strong id="new_confirmation_code"></strong></div>
+      <button class="btn spaced" id="btn-reload" type="button">처음으로</button>
+    </section>
+  </div>
+</div>
+
+<div id="modal-resource" class="modal hidden">
+  <div class="sheet">
+    <h2 id="resource-title">수정</h2>
+    <div id="resource-body"></div>
+    <button class="btn spaced" type="button" data-close>닫기</button>
+  </div>
+</div>
+<script type="module" src="/js/app.js"></script>
+</body>
+</html>
