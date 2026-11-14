@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BCSFE 회원 키 관리</title>
+  <style>
+    :root {
+      --bg: #0b0e16;
+      --glass: rgba(28, 34, 50, .72);
+      --inner: rgba(16, 21, 34, .55);
+      --border: rgba(197, 210, 234, .28);
+      --text: #f2f5fb;
+      --muted: #b4bed4;
+      --accent: #ff8a3d;
+      --ok: #5ee0a0;
+      --danger: #ff6b6b;
+      --warn: #ffd166;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "Malgun Gothic", "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(900px 500px at 12% -10%, rgba(255, 138, 61, .28), transparent 55%),
+        radial-gradient(800px 480px at 90% 0%, rgba(92, 120, 255, .22), transparent 50%),
+        radial-gradient(700px 420px at 70% 100%, rgba(168, 85, 247, .16), transparent 55%),
+        var(--bg);
+    }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 36px 20px 80px; }
+    .glass {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
+      backdrop-filter: blur(18px);
+    }
+    h1 { font-size: 28px; margin: 0 0 6px; }
+    h2 { font-size: 16px; color: var(--accent); margin: 0 0 14px; }
+    .muted { color: var(--muted); }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .grid { display: grid; gap: 14px; }
+    .stats { grid-template-columns: repeat(4, 1fr); }
+    .two { grid-template-columns: 1.1fr .9fr; }
+    @media (max-width: 860px) { .stats, .two { grid-template-columns: 1fr; } }
+    .card { padding: 22px; }
+    .stat { padding: 18px; }
+    .stat b { display: block; font-size: 26px; margin-top: 6px; }
+    input, textarea, select {
+      width: 100%;
+      background: var(--inner);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 11px 12px;
+      outline: none;
+    }
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 16px;
+      background: #2a3144;
+      color: var(--text);
+      cursor: pointer;
+    }
+    button.accent { background: var(--accent); color: #1a120c; font-weight: 700; }
+    button.danger { background: var(--danger); color: #1a120c; font-weight: 700; }
+    button:disabled { opacity: .5; cursor: default; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; }
+    .key { font-family: Consolas, "Courier New", monospace; word-break: break-all; }
+    .pill { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 12px; background: #2a3144; }
+    .pill.ok { background: rgba(94,224,160,.16); color: var(--ok); }
+    .pill.warn { background: rgba(255,209,102,.16); color: var(--warn); }
+    .pill.bad { background: rgba(255,107,107,.16); color: var(--danger); }
+    .gate { max-width: 420px; margin: 18vh auto 0; padding: 28px; }
+    .hidden { display: none !important; }
+    .toast {
+      position: fixed; right: 18px; bottom: 18px; padding: 12px 16px;
+      border-radius: 12px; background: #232a3c; border: 1px solid var(--border);
+      display: none; max-width: 360px;
+    }
+    .tiny { font-size: 12px; }
+    .price { font-size: 22px; color: var(--accent); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section id="login" class="glass gate">
+      <h1>회원 키 관리</h1>
+      <p class="muted">ADMIN.HTML · 고급회원 키 발급</p>
+      <input id="pw" type="password" placeholder="관리자 비밀번호" style="margin:18px 0 12px">
+      <button class="accent" id="loginBtn" style="width:100%">들어가기</button>
+      <p id="loginErr" class="tiny" style="color:var(--danger); min-height:18px"></p>
+    </section>
+
+    <section id="app" class="hidden">
+      <div class="card glass" style="margin-bottom:16px">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <h1>회원 키 관리</h1>
+            <p class="muted">무료회원 한도 통조림 30,000 / XP 10,000,000 / 일반 티켓 20</p>
+          </div>
+          <div class="tiny muted" style="text-align:right">
+            <div>이 기기 발자국</div>
+            <div class="key" id="deviceLabel">—</div>
+            <div id="apiState">Firebase keys 연결 중…</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid stats" style="margin-bottom:16px">
+        <div class="glass stat"><span class="muted">1회권</span><b id="nOnce">0</b></div>
+        <div class="glass stat"><span class="muted">무제한</span><b id="nFull">0</b></div>
+        <div class="glass stat"><span class="muted">사용/묶임</span><b id="nUsed">0</b></div>
+        <div class="glass stat"><span class="muted">취소</span><b id="nRevoked">0</b></div>
+      </div>
+
+      <div class="grid two" style="margin-bottom:16px">
+        <div class="glass card">
+          <h2>키 발급</h2>
+          <div class="row" style="margin-bottom:12px">
+            <div class="glass card" style="flex:1; padding:14px">
+              <div class="muted">고급회원 1회권</div>
+              <div class="price">3,000원</div>
+            </div>
+            <div class="glass card" style="flex:1; padding:14px">
+              <div class="muted">고급회원 무제한</div>
+              <div class="price">10,000원</div>
+            </div>
+          </div>
+          <label class="tiny muted">메모</label>
+          <input id="note" placeholder="구매자 이름, 입금 확인 등" style="margin:6px 0 10px">
+          <div class="row">
+            <select id="count" style="max-width:120px">
+              <option value="1">1개</option>
+              <option value="3">3개</option>
+              <option value="5">5개</option>
+              <option value="10">10개</option>
+            </select>
+            <button class="accent" id="makeOnce">1회권 만들기</button>
+            <button class="accent" id="makeFull">무제한 만들기</button>
+          </div>
+          <p class="tiny muted" style="margin-top:12px">발급한 키는 Firebase에 저장됩니다. 무제한 키는 처음 쓰는 기기에 묶입니다.</p>
+        </div>
+        <div class="glass card">
+          <h2>키 사용 / 발자국</h2>
+          <input id="useKey" placeholder="BCSK-FULL-...." style="margin-bottom:10px">
+          <div class="row">
+            <button class="accent" id="useBtn">이 기기에서 사용</button>
+            <button id="copyDevice">기기 ID 복사</button>
+          </div>
+          <p id="useMsg" class="tiny muted" style="margin-top:12px">무제한 키를 여기서 쓰면 이 브라우저에 발자국이 남습니다.</p>
+        </div>
+      </div>
+
+      <div class="glass card">
+        <div class="row" style="justify-content:space-between; margin-bottom:12px">
+          <h2 style="margin:0">발급된 키</h2>
+          <div class="row">
+            <button id="syncBtn">DB에서 불러오기</button>
+            <button id="exportBtn">JSON 저장</button>
+            <button id="importBtn">JSON 열기</button>
+            <input id="importFile" type="file" accept="application/json" class="hidden">
+          </div>
+        </div>
+        <div style="overflow:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>종류</th>
+                <th>키</th>
+                <th>상태</th>
+                <th>기기</th>
+                <th>메모</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="toast" id="toast"></div>
+<script type="module">
+import { listEditorKeys, saveRecord, redeemRemote } from "/js/fbkeys.js";
+
+const SECRET = "BCSFE-KR-MEMBER-0923";
+const ADMIN_PW = "0923";
+const DEVICE_KEY = "bcsfe_device_id";
+const BINDS_KEY = "bcsfe_unlimited_binds";
+const USED_KEY = "bcsfe_used_once";
+const CATALOG_KEY = "bcsfe_key_catalog";
+const PREMIUM_KEY = "bcsfe_premium";
+const SESSION_KEY = "bcsfe_admin_ok";
+
+const $ = (id) => document.getElementById(id);
+let apiBase = "";
+let keys = [];
+
+function toast(msg) {
+  const el = $("toast");
+  el.textContent = msg;
+  el.style.display = "block";
+  setTimeout(() => el.style.display = "none", 2400);
+}
+
+function deviceId() {
+  let id = localStorage.getItem(DEVICE_KEY);
+  if (!id) {
+    const bytes = crypto.getRandomValues(new Uint8Array(8));
+    id = [...bytes].map(b => b.toString(16).padStart(2, "0")).join("");
+    localStorage.setItem(DEVICE_KEY, id);
+  }
+  return id;
+}
+
+function loadBinds() {
+  try { return JSON.parse(localStorage.getItem(BINDS_KEY) || "{}"); }
+  catch { return {}; }
+}
+function saveBinds(binds) {
+  localStorage.setItem(BINDS_KEY, JSON.stringify(binds));
+}
+function loadUsed() {
+  try { return JSON.parse(localStorage.getItem(USED_KEY) || "[]"); }
+  catch { return []; }
+}
+function saveUsed(list) {
+  localStorage.setItem(USED_KEY, JSON.stringify(list));
+}
+
+async function sha256hex(text) {
+  const data = new TextEncoder().encode(text);
+  if (crypto.subtle) {
+    const buf = await crypto.subtle.digest("SHA-256", data);
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+  return sha256js(text);
+}
+
+function sha256js(ascii) {
+  function rightRotate(v, n) { return (v >>> n) | (v << (32 - n)); }
+  const mathPow = Math.pow;
+  const maxWord = mathPow(2, 32);
+  const lengthProperty = "length";
+  let i, j;
+  const result = [];
+  const words = [];
+  const asciiBitLength = ascii[lengthProperty] * 8;
+  let hash = sha256js.h = sha256js.h || [];
+  const k = sha256js.k = sha256js.k || [];
+  let primeCounter = k[lengthProperty];
+  const isComposite = {};
+  for (let candidate = 2; primeCounter < 64; candidate++) {
+    if (!isComposite[candidate]) {
+      for (i = 0; i < 313; i += candidate) isComposite[i] = candidate;
+      hash[primeCounter] = (mathPow(candidate, .5) * maxWord) | 0;
+      k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
+    }
+  }
+  hash = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
+  ascii += "\x80";
+  while (ascii[lengthProperty] % 64 - 56) ascii += "\x00";
+  for (i = 0; i < ascii[lengthProperty]; i++) {
+    j = ascii.charCodeAt(i);
+    if (j >> 8) return "";
+    words[i >> 2] |= j << ((3 - i) % 4) * 8;
+  }
+  words[words[lengthProperty]] = (asciiBitLength / maxWord) | 0;
+  words[words[lengthProperty]] = asciiBitLength;
+  for (j = 0; j < words[lengthProperty];) {
+    const w = words.slice(j, j += 16);
+    const oldHash = hash.slice(0);
+    for (i = 0; i < 64; i++) {
+      const w15 = w[i - 15], w2 = w[i - 2];
+      const a = hash[0], e = hash[4];
+      const temp1 = hash[7]
+        + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))
+        + ((e & hash[5]) ^ ((~e) & hash[6]))
+        + k[i]
+        + (w[i] = (i < 16) ? w[i] : (
+            w[i - 16]
+            + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))
+            + w[i - 7]
+            + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
+          ) | 0
+        );
+      const temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))
+        + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+      hash = [(temp1 + temp2) | 0].concat(hash);
+      hash[4] = (hash[4] + temp1) | 0;
+      hash.pop();
+    }
+    for (i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;
+  }
+  for (i = 0; i < 8; i++) {
+    for (j = 3; j + 1; j--) {
+      const b = (hash[i] >> (j * 8)) & 255;
+      result.push((b < 16 ? "0" : "") + b.toString(16));
+    }
+  }
+  return result.join("");
+}
+
+async function sign(kind, raw) {
+  const hex = await sha256hex(`${SECRET}|${kind}|${raw}`);
+  return hex.slice(0, 8).toUpperCase();
+}
+
+async function makeKey(kind) {
+  const bytes = crypto.getRandomValues(new Uint8Array(8));
+  const raw = [...bytes].map(b => b.toString(16).padStart(2, "0")).join("").toUpperCase();
+  const prefix = kind === "once" ? "ONCE" : "FULL";
+  const grouped = raw.match(/.{4}/g).join("-");
+  const sig = await sign(kind, raw);
+  return `BCSK-${prefix}-${grouped}-${sig}`;
+}
+
+function parseKey(text) {
+  const key = (text || "").trim().toUpperCase().replace(/\s+/g, "");
+  const parts = key.split("-");
+  if (parts.length !== 7 || parts[0] !== "BCSK" || !["ONCE", "FULL"].includes(parts[1])) return null;
+  return { key, kind: parts[1] === "ONCE" ? "once" : "full", raw: parts.slice(2, 6).join("") };
+}
+
+async function validKey(text) {
+  const parsed = parseKey(text);
+  if (!parsed || parsed.raw.length !== 16) return null;
+  const sig = await sign(parsed.kind, parsed.raw);
+  if (sig !== parsed.key.split("-")[6]) return null;
+  return parsed;
+}
+
+async function findApi() {
+  if (location.protocol.startsWith("http")) {
+    apiBase = "";
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 600);
+      const r = await fetch("/api/ping", { signal: ctrl.signal });
+      clearTimeout(t);
+      if (r.ok) return true;
+    } catch {}
+    return false;
+  }
+  for (let p = 18765; p <= 18775; p++) {
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 350);
+      const r = await fetch(`http://127.0.0.1:${p}/api/ping`, { signal: ctrl.signal });
+      clearTimeout(t);
+      if (r.ok) {
+        apiBase = `http://127.0.0.1:${p}`;
+        return true;
+      }
+    } catch {}
+  }
+  apiBase = "";
+  return false;
+}
+
+async function api(path, opts = {}) {
+  const headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
+  if (opts.auth !== false) headers["X-Admin-Password"] = ADMIN_PW;
+  const res = await fetch(apiBase + path, Object.assign({}, opts, { headers }));
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || data.message || "요청 실패");
+  return data;
+}
+
+function persistLocal() {
+  localStorage.setItem(CATALOG_KEY, JSON.stringify({ keys }));
+}
+
+function loadLocal() {
+  try {
+    const data = JSON.parse(localStorage.getItem(CATALOG_KEY) || "{}");
+    keys = Array.isArray(data.keys) ? data.keys : [];
+  } catch { keys = []; }
+}
+
+function upsert(rec) {
+  const i = keys.findIndex(k => k.key === rec.key);
+  if (i >= 0) keys[i] = rec;
+  else keys.unshift(rec);
+  persistLocal();
+  render();
+}
+
+function render() {
+  $("nOnce").textContent = keys.filter(k => k.type === "once").length;
+  $("nFull").textContent = keys.filter(k => k.type === "full").length;
+  $("nUsed").textContent = keys.filter(k => k.used || k.bound_device).length;
+  $("nRevoked").textContent = keys.filter(k => k.revoked).length;
+  const binds = loadBinds();
+  $("tbody").innerHTML = keys.map(k => {
+    const bind = binds[k.key] || (k.bound_device ? { device: k.bound_device } : null);
+    let st = '<span class="pill">대기</span>';
+    if (k.revoked) st = '<span class="pill bad">취소</span>';
+    else if (k.type === "full" && bind) st = '<span class="pill ok">기기 묶임</span>';
+    else if (k.used) st = '<span class="pill warn">사용됨</span>';
+    const device = (bind && bind.device) || k.bound_device || "—";
+    return `<tr>
+      <td>${k.type === "full" ? "무제한" : "1회권"}<div class="tiny muted">${Number(k.price||0).toLocaleString()}원</div></td>
+      <td class="key">${k.key}</td>
+      <td>${st}</td>
+      <td class="tiny key">${device}</td>
+      <td class="tiny">${k.note || ""}</td>
+      <td>
+        <button data-copy="${k.key}">복사</button>
+        ${k.revoked ? "" : `<button class="danger" data-rev="${k.key}">취소</button>`}
+      </td>
+    </tr>`;
+  }).join("") || `<tr><td colspan="6" class="muted">아직 발급한 키가 없습니다.</td></tr>`;
+}
+
+async function createKeys(kind) {
+  const note = $("note").value.trim();
+  const count = Number($("count").value || 1);
+  try {
+    const created = [];
+    for (let i = 0; i < count; i++) {
+      const rec = await saveRecord({
+        id: crypto.randomUUID(),
+        key: await makeKey(kind),
+        type: kind,
+        price: kind === "full" ? 10000 : 3000,
+        note,
+        created_at: new Date().toISOString().slice(0, 19),
+        used: false,
+        revoked: false,
+        bound_device: null,
+        bound_at: null,
+        source: "nyanko-editor",
+      });
+      created.push(rec);
+      upsert(rec);
+    }
+    toast(`${kind === "full" ? "무제한" : "1회권"} ${created.length}개 발급 · Firebase keys 저장`);
+  } catch (e) {
+    toast(e.message || "Firebase 저장 실패");
+  }
+}
+
+function leaveFootprint(key) {
+  const me = deviceId();
+  const binds = loadBinds();
+  const rec = binds[key];
+  if (rec && rec.device && rec.device !== me) {
+    return { ok: false, message: "이 무제한 키는 다른 기기 localStorage에 묶여 있습니다." };
+  }
+  binds[key] = { device: me, at: new Date().toISOString() };
+  saveBinds(binds);
+  localStorage.setItem(PREMIUM_KEY, JSON.stringify({ key, device: me, type: "full" }));
+  return { ok: true, message: "이 기기에 발자국을 남겼습니다." };
+}
+
+async function useKey() {
+  const parsed = parseKey($("useKey").value);
+  if (!parsed) {
+    $("useMsg").textContent = "키가 올바르지 않습니다.";
+    $("useMsg").style.color = "var(--danger)";
+    return;
+  }
+  const me = deviceId();
+  try {
+    const data = await redeemRemote(parsed.key, me);
+    if (!data.ok) throw new Error(data.message || "등록 실패");
+    if (parsed.kind === "full") leaveFootprint(parsed.key);
+    else {
+      const used = loadUsed();
+      if (!used.includes(parsed.key)) {
+        used.push(parsed.key);
+        saveUsed(used);
+      }
+    }
+    const rec = data.record || keys.find(k => k.key === parsed.key);
+    if (rec) upsert(rec);
+    $("useMsg").textContent = data.message || (parsed.kind === "full"
+      ? "무제한 키를 이 기기에 묶었습니다."
+      : "1회권을 사용 처리했습니다.");
+    $("useMsg").style.color = "var(--ok)";
+  } catch (e) {
+    $("useMsg").textContent = e.message || "등록 실패";
+    $("useMsg").style.color = "var(--danger)";
+  }
+}
+
+async function syncNow() {
+  try {
+    keys = await listEditorKeys();
+    persistLocal();
+    render();
+    $("apiState").textContent = "Firebase keys 연결됨";
+    toast("Firebase keys에서 불러왔습니다.");
+  } catch (e) {
+    $("apiState").textContent = "Firebase 연결 실패";
+    toast(e.message || "불러오기 실패");
+  }
+}
+
+function exportJson() {
+  const blob = new Blob([JSON.stringify({ keys }, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "membership_keys.json";
+  a.click();
+}
+
+async function enter() {
+  if ($("pw").value !== ADMIN_PW) {
+    $("loginErr").textContent = "비밀번호가 다릅니다.";
+    return;
+  }
+  sessionStorage.setItem(SESSION_KEY, "1");
+  $("login").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  deviceId();
+  $("deviceLabel").textContent = deviceId();
+  loadLocal();
+  render();
+  $("apiState").textContent = "Firebase keys 연결 중…";
+  await syncNow();
+}
+
+async function adoptEditorDevice() {
+  try {
+    const r = await fetch((apiBase || "") + "/api/device");
+    const data = await r.json();
+    if (!data.device_id) return;
+    const old = localStorage.getItem(DEVICE_KEY);
+    if (old && old !== data.device_id) {
+      const binds = loadBinds();
+      for (const key of Object.keys(binds)) {
+        if (binds[key] && binds[key].device === old) binds[key].device = data.device_id;
+      }
+      saveBinds(binds);
+    }
+    localStorage.setItem(DEVICE_KEY, data.device_id);
+    $("deviceLabel").textContent = data.device_id;
+  } catch {}
+}
+
+$("loginBtn").onclick = enter;
+$("pw").addEventListener("keydown", (e) => { if (e.key === "Enter") enter(); });
+$("makeOnce").onclick = () => createKeys("once");
+$("makeFull").onclick = () => createKeys("full");
+$("useBtn").onclick = useKey;
+$("copyDevice").onclick = async () => {
+  await navigator.clipboard.writeText(deviceId());
+  toast("기기 발자국 ID를 복사했습니다.");
+};
+$("syncBtn").onclick = syncNow;
+$("exportBtn").onclick = exportJson;
+$("importBtn").onclick = () => $("importFile").click();
+$("importFile").onchange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const data = JSON.parse(await file.text());
+  if (Array.isArray(data.keys)) keys = data.keys;
+  persistLocal();
+  render();
+  try {
+    for (const rec of keys) await saveRecord(rec);
+    toast("JSON을 Firebase keys에 올렸습니다.");
+  } catch (err) {
+    toast(err.message || "JSON은 열었지만 Firebase 저장에 실패했습니다.");
+  }
+};
+document.addEventListener("click", async (e) => {
+  const copy = e.target.dataset.copy;
+  const rev = e.target.dataset.rev;
+  if (copy) {
+    await navigator.clipboard.writeText(copy);
+    toast("키를 복사했습니다.");
+  }
+  if (rev) {
+    const rec = keys.find(k => k.key === rev);
+    if (!rec) return;
+    rec.revoked = true;
+    upsert(rec);
+    try { await saveRecord(rec); toast("키를 취소하고 Firebase에 저장했습니다."); }
+    catch (err) { toast(err.message || "취소는 했지만 Firebase 저장에 실패했습니다."); }
+  }
+});
+
+if (sessionStorage.getItem(SESSION_KEY) === "1") {
+  $("pw").value = ADMIN_PW;
+  enter();
+}
+</script>
+</body>
+</html>

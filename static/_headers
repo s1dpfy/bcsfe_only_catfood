@@ -1,0 +1,21 @@
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/
+  Cache-Control: no-cache
+
+/index.html
+  Cache-Control: no-cache
+
+/admin.html
+  Cache-Control: no-cache
+
+/css/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/js/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/editor.py
+  Cache-Control: public, max-age=86400

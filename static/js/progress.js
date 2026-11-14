@@ -1,35 +1,51 @@
-const dl = { loaded: 0, total: 0, label: "받는 중", on: false };
+const dl = { loaded: 0, total: 0, label: "받는 중", on: false, phasePct: 0 };
 const nativeFetch = window.fetch.bind(window);
 
-export function paintDl() {
-  const box = document.getElementById("dl-box");
-  const bar = document.getElementById("dl-bar");
-  const text = document.getElementById("dl-label");
-  if (!dl.on) {
+function pctNow() {
+  const bytePct = dl.total > 0 ? Math.min(100, Math.round(dl.loaded / dl.total * 100)) : 0;
+  return Math.max(bytePct, dl.phasePct || 0);
+}
+
+function paintOne(boxId, barId, labelId) {
+  const box = document.getElementById(boxId);
+  const bar = document.getElementById(barId);
+  const text = document.getElementById(labelId);
+  if (!box || !bar || !text) return;
+  if (!dl.on && boxId !== "boot-dl") {
     box.classList.add("hidden");
     return;
   }
   box.classList.remove("hidden");
-  const pct = dl.total > 0 ? Math.min(100, Math.round(dl.loaded / dl.total * 100)) : 0;
-  bar.classList.toggle("unk", dl.total === 0);
-  bar.style.width = dl.total ? pct + "%" : "";
+  const pct = pctNow();
+  const hasBytes = dl.total > 0;
+  bar.classList.toggle("unk", !hasBytes && pct < 2);
+  bar.style.width = (hasBytes || pct > 0) ? Math.max(pct, hasBytes ? Math.min(100, Math.round(dl.loaded / dl.total * 100)) : pct) + "%" : "";
   const mb = (n) => (n / 1048576).toFixed(1);
-  text.textContent = dl.total
+  text.textContent = hasBytes
     ? `${dl.label} ${mb(dl.loaded)}MB / ${mb(dl.total)}MB · ${pct}%`
-    : `${dl.label} ${mb(dl.loaded)}MB`;
-  const start = document.getElementById("btn-start");
-  if (start && start.disabled && document.getElementById("section-intro").classList.contains("active")) {
-    start.textContent = dl.total ? `받는 중 ${pct}%` : "받는 중";
-  }
+    : `${dl.label} ${mb(dl.loaded)}MB · ${pct}%`;
+}
+
+function paintPct() {
+  const el = document.getElementById("boot-pct");
+  if (!el) return;
+  el.textContent = pctNow() + "%";
+}
+
+export function paintDl() {
+  paintOne("dl-box", "dl-bar", "dl-label");
+  paintOne("boot-dl", "boot-bar", "boot-label");
+  paintPct();
   const loadBtn = document.getElementById("btn-load");
   if (loadBtn && loadBtn.disabled && document.getElementById("section-load").classList.contains("active")) {
-    loadBtn.textContent = dl.total ? `불러오는 중 ${pct}%` : "불러오는 중";
+    loadBtn.textContent = dl.on ? `불러오는 중 ${pctNow()}%` : "불러오는 중";
   }
 }
 
 export function startDl(label) {
   dl.loaded = 0;
   dl.total = 0;
+  dl.phasePct = 0;
   dl.label = label;
   dl.on = true;
   paintDl();
@@ -37,11 +53,19 @@ export function startDl(label) {
 
 export function stopDl() {
   dl.on = false;
+  dl.phasePct = 100;
   paintDl();
 }
 
 export function setDlLabel(label) {
   dl.label = label;
+  paintDl();
+}
+
+export function setPhaseProgress(pct, label) {
+  dl.phasePct = Math.max(0, Math.min(100, Number(pct) || 0));
+  if (label) dl.label = label;
+  dl.on = true;
   paintDl();
 }
 

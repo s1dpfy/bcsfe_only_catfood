@@ -8,6 +8,8 @@ ENV/
 
 # 환경변수 파일 (보안상 절대 업로드 금지)
 .env
+membership_keys.json
+membership.json
 
 # SQLite3 데이터베이스 파일 (실제 운영 데이터)
 *.db

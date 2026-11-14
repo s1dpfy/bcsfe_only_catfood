@@ -1,10 +1,15 @@
 const MAX_BODY = 20 * 1024 * 1024;
 const DROP = new Set(["host", "content-length", "connection", "transfer-encoding", "origin", "referer"]);
 
-function hostAllowed(host) {
+function hostAllowed(host, path) {
   host = (host || "").toLowerCase().replace(/\.$/, "");
+  path = (path || "").toLowerCase();
   if (host === "git.battlecatsmodding.org" || host === "gitlab.com") return true;
-  return host.endsWith(".ponosgames.com") || host.endsWith(".amazonaws.com");
+  if (host.endsWith(".ponosgames.com") || host.endsWith(".amazonaws.com")) return true;
+  if (host === "storage.googleapis.com" || host.endsWith(".storage.googleapis.com")) {
+    return host.includes("battlecats") || path.includes("battlecats");
+  }
+  return false;
 }
 
 function bytesToB64(bytes) {
@@ -34,7 +39,7 @@ export async function onRequestPost(context) {
   } catch (e) {
     return Response.json({ error: "허용되지 않은 주소입니다." }, { status: 400 });
   }
-  if (url.protocol !== "https:" || !hostAllowed(url.hostname)) {
+  if (url.protocol !== "https:" || !hostAllowed(url.hostname, url.pathname)) {
     return Response.json({ error: "허용되지 않은 주소입니다." }, { status: 400 });
   }
   const headers = new Headers();
