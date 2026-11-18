@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>VIP 키 | 냥슬리 에디터</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111111'/%3E%3Cpath fill='%23f4f4f5' d='M12 30l6-18 10 14h8l10-14 6 18c4 6 4 20-20 24S8 36 12 30z'/%3E%3Ccircle cx='24' cy='34' r='3' fill='%23111'/%3E%3Ccircle cx='40' cy='34' r='3' fill='%23111'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+<link href="/static/css/editor.css" rel="stylesheet">
+</head>
+<body data-page="member" data-tier="vip">
+<div class="app">
+  <h1><i class="fa-solid fa-cat"></i>냥슬리 에디터</h1>
+  <p class="sub">VIP 키 인증</p>
+  <div class="panel">
+    <div id="action-log" class="msg"></div>
+    <h2><i class="fa-solid fa-crown"></i>VIP 키</h2>
+    <input id="vip_key" class="input" placeholder="6자리 키" maxlength="8" autocomplete="off">
+    <div class="stack" style="margin-top:8px">
+      <button class="btn primary" onclick="verifyKey()"><i class="fa-solid fa-check"></i>확인</button>
+      <a class="btn" href="/"><i class="fa-solid fa-arrow-left"></i>메인으로</a>
+    </div>
+  </div>
+</div>
+<script src="/static/js/editor.js"></script>
+</body>
+</html>

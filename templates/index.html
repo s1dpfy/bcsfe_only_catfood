@@ -14,209 +14,57 @@
 <meta property="og:url" content="https://catfood.sldpfy.me/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111111'/%3E%3Cpath fill='%23f4f4f5' d='M12 30l6-18 10 14h8l10-14 6 18c4 6 4 20-20 24S8 36 12 30z'/%3E%3Ccircle cx='24' cy='34' r='3' fill='%23111'/%3E%3Ccircle cx='40' cy='34' r='3' fill='%23111'/%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#000;--card:#141414;--line:#2a2a2a;--ink:#f5f5f5;--sub:#c8c8c8;--ok:#3dd68c}
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{background:var(--bg);color:var(--ink);font-family:'Nanum Gothic',system-ui,sans-serif;font-size:18px;line-height:1.35;overflow-x:hidden}
-::-webkit-scrollbar{width:0;height:0;display:none}
-*{scrollbar-width:none;-ms-overflow-style:none}
-button,input,a{font:inherit;color:inherit}
-button{cursor:pointer}
-.app{max-width:520px;margin:0 auto;padding:16px 14px 28px}
-h1{font-size:32px;font-weight:400;letter-spacing:-.4px;display:flex;align-items:center;gap:10px}
-.btn i,.choice i,h2 i{width:1.15em;text-align:center}
-.sub{color:var(--sub);font-size:16px;margin:4px 0 12px}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
-.section{display:none}
-.section.active{display:block}
-.msg{font-size:16px;color:var(--ok);min-height:0;margin-bottom:8px}
-.msg:empty{display:none}
-.alert{display:none}
-.stack{display:flex;flex-direction:column;gap:8px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.thirds{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-.thirds .btn{padding:10px 6px}
-.btn,.choice{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:54px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#1c1c1c;text-decoration:none;font-size:18px;font-weight:400}
-.choice{justify-content:space-between;text-align:left}
-.choice b{font-weight:400;display:inline-flex;align-items:center;gap:8px;font-size:19px}
-.choice span{color:var(--sub);font-size:15px;font-weight:400}
-.primary{background:#fff;color:#000;border-color:#fff}
-.discord{background:#5865f2;color:#fff;border-color:#5865f2}
-.instagram{background:#e1306c;color:#fff;border-color:#e1306c}
-.input{width:100%;height:52px;margin-top:8px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:#0c0c0c;font-size:18px}
-h2{font-size:26px;font-weight:400;margin-bottom:4px;display:flex;align-items:center;gap:8px}
-.hint{color:var(--sub);font-size:16px;margin-bottom:10px}
-.hidden{display:none!important}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:flex-end;justify-content:center;padding:12px;padding-bottom:calc(12px + var(--kb,0px));z-index:5}
-.sheet{width:min(520px,100%);max-height:calc(88dvh - var(--kb,0px));overflow:auto;background:#111;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:var(--kb,0px)}
-.modal.pop{align-items:center;padding-bottom:12px}
-.timer{height:4px;background:#2a2a2a;border-radius:99px;margin:12px 0;overflow:hidden}
-.timer b{display:block;height:100%;width:0;background:#fff;transition:width 5s linear}
-.line{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #222}
-.line span{flex:1;min-width:0;font-size:17px;line-height:1.35}
-.line small{display:block;color:var(--sub);font-size:14px;margin-top:2px}
-.line b{font-weight:400;flex:none;font-size:18px}
-.line input{width:96px;flex:none;height:46px;text-align:right;margin:0}
-.stock b{font-size:20px;font-weight:400;color:#f5f5f5}
-.stock span{color:#f5f5f5;font-size:18px}
-.cred{padding:12px 0;border-bottom:1px solid #222}
-.cred small{color:var(--sub);font-size:14px}
-.cred strong{display:block;margin-top:2px;font-size:24px;font-weight:400}
-table{width:100%;border-collapse:collapse;font-size:16px;margin:6px 0 10px}
-.benefit{margin:0 0 8px}
-.benefit th,.benefit td{padding:8px 4px}
-th,td{padding:7px 4px;border-bottom:1px solid #2a2a2a;text-align:right}
-th:first-child,td:first-child{text-align:left}
-th{color:var(--sub);font-weight:400}
-@media(min-width:700px){.modal{align-items:center}}
-</style>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+<link href="/static/css/editor.css" rel="stylesheet">
 </head>
-<body>
-<div id="modal-instagram" class="modal">
+<body data-page="home">
+<div id="modal-tiktok" class="modal">
   <div class="sheet" onclick="event.stopPropagation()">
-    <h2>인스타그램 이벤트</h2>
-    <p class="hint" style="font-size:17px;line-height:1.6">인스타그램을 팔로우하고 문의하기를 눌러 인증하면<br>VIP 1회권 당첨 기회에 참여할 수 있습니다!</p>
-    <a class="btn instagram" href="https://www.instagram.com/s1dpfy" target="_blank" rel="noopener">인스타그램 팔로우</a>
-    <a class="btn" href="https://open.kakao.com/me/nyangs1" target="_blank" rel="noopener" style="margin-top:8px">문의하기 (인증)</a>
-    <button class="btn" style="margin-top:10px" onclick="closeInstagram()">닫기</button>
-  </div>
-</div>
-
-<div id="modal-skip-warning" class="modal hidden">
-  <div class="sheet" onclick="event.stopPropagation()">
-    <h2>주의</h2>
-    <p class="hint" style="font-size:17px;line-height:1.6">디스코드로 로그인 하지 않으면 보상이 사라져요!<br>통조림 최대 개수제한 25000에서 10000, 냥코티켓, XP 이용제한</p>
-    <div class="timer"><b id="skip-timer-bar"></b></div>
-    <p id="skip-countdown" style="text-align:center;color:var(--sub);margin-bottom:12px">10초 후 진행 가능</p>
-    <button class="btn primary" id="btn-skip-confirm" disabled onclick="confirmSkip()">확인</button>
-  </div>
-</div>
-
-<div id="modal-discord" class="modal hidden">
-  <div class="sheet" onclick="event.stopPropagation()">
-    <h2>디스코드 서버 가입</h2>
-    <p class="hint" id="discord-msg">승인하면 서버에 자동으로 들어갑니다.</p>
-    <a class="btn discord" href="/api/discord/login">디스코드 서버 가입</a>
-    <button class="btn" style="margin-top:10px;background:#333;color:#fff;border-color:#555" onclick="skipDiscord()">디코 로그인 없이 하기</button>
+    <h2><i class="fa-brands fa-tiktok"></i>틱톡 이벤트</h2>
+    <p class="hint" style="font-size:17px;line-height:1.6">틱톡 그룹에 참여하고 문의하기를 눌러 인증하면<br>VIP 1회권 당첨 기회에 참여할 수 있습니다!</p>
+    <a class="btn long" href="https://tiktok.me/group/ZSpWcV4p1/" target="_blank" rel="noopener"><i class="fa-brands fa-tiktok"></i>틱톡 그룹참여시 vip1회권 당첨 기회</a>
+    <a class="btn" href="https://open.kakao.com/me/nyangs1" target="_blank" rel="noopener" style="margin-top:8px"><i class="fa-solid fa-comment-dots"></i>문의하기 (인증)</a>
+    <button class="btn" style="margin-top:10px" onclick="closeTiktok()"><i class="fa-solid fa-xmark"></i>닫기</button>
   </div>
 </div>
 
 <div class="app">
-  <h1>냥슬리 에디터</h1>
+  <h1><i class="fa-solid fa-cat"></i>냥슬리 에디터</h1>
   <p class="sub">냥코 대전쟁 세이브 수정</p>
   <p class="sub" style="font-size:14px;margin-top:-8px;color:var(--sub)">made by nyansl</p>
   <div class="panel">
-    <div id="action-log" class="msg"></div>
-    <div id="message-box" class="alert"></div>
-
-    <section id="section-intro" class="section active">
-      <div class="stack">
-        <button class="choice" onclick="selectMembership('guest')"><b>일반 (비회원)</b><span>사용하기</span></button>
-        <button class="choice" onclick="selectMembership('gold')"><b>골드</b><span>사용하기</span></button>
-        <button class="choice" onclick="selectMembership('vip')"><b>VIP</b><span>사용하기</span></button>
-        <div class="thirds">
-          <button class="btn" onclick="openInfo('benefits')">혜택</button>
-          <button class="btn" onclick="openInfo('pricing')">가격</button>
-          <button class="btn" onclick="openInfo('guide')">사용법</button>
-        </div>
-        <div class="grid">
-          <a class="btn" href="https://open.kakao.com/me/nyangs1" target="_blank" rel="noopener">개발자 문의</a>
-          <a class="btn" href="https://open.kakao.com/o/sSBOMwMi" target="_blank" rel="noopener">키 구매</a>
-        </div>
-        <a class="btn instagram" href="https://www.instagram.com/s1dpfy" target="_blank" rel="noopener">제작자 인스타 팔로우</a>
-        <a class="btn discord" href="https://discord.gg/XY3gwQejy" target="_blank" rel="noopener">디스코드</a>
+    <div class="stack">
+      <a class="choice" href="/editpage"><b><i class="fa-solid fa-user"></i>일반 (비회원)</b><span>사용하기 <i class="fa-solid fa-chevron-right"></i></span></a>
+      <a class="choice" href="/goldmember"><b><i class="fa-solid fa-coins"></i>골드</b><span>사용하기 <i class="fa-solid fa-chevron-right"></i></span></a>
+      <a class="choice" href="/vipmember"><b><i class="fa-solid fa-crown"></i>VIP</b><span>사용하기 <i class="fa-solid fa-chevron-right"></i></span></a>
+      <div class="thirds">
+        <button class="btn" onclick="openInfo('benefits')"><i class="fa-solid fa-gift"></i>혜택</button>
+        <button class="btn" onclick="openInfo('pricing')"><i class="fa-solid fa-tag"></i>가격</button>
+        <button class="btn" onclick="openInfo('guide')"><i class="fa-solid fa-book-open"></i>사용법</button>
       </div>
-    </section>
-
-    <section id="section-intro-restricted" class="section">
-      <div class="stack">
-        <button class="choice" onclick="selectMembership('guest')"><b>일반 (제한)</b><span>사용하기</span></button>
-        <button class="choice" onclick="selectMembership('gold')"><b>골드</b><span>사용하기</span></button>
-        <button class="choice" onclick="selectMembership('vip')"><b>VIP</b><span>사용하기</span></button>
-        <div class="thirds">
-          <button class="btn" onclick="openInfo('benefits')">혜택</button>
-          <button class="btn" onclick="openInfo('pricing')">가격</button>
-          <button class="btn" onclick="openInfo('guide')">사용법</button>
-        </div>
-        <div class="grid">
-          <a class="btn" href="https://open.kakao.com/me/nyangs1" target="_blank" rel="noopener">개발자 문의</a>
-          <a class="btn" href="https://open.kakao.com/o/sSBOMwMi" target="_blank" rel="noopener">키 구매</a>
-        </div>
-        <a class="btn instagram" href="https://www.instagram.com/s1dpfy" target="_blank" rel="noopener">제작자 인스타 팔로우</a>
-        <a class="btn discord" href="/api/discord/login">디스코드 로그인하고 혜택 받기</a>
-      </div>
-    </section>
-
-    <section id="section-auth" class="section">
-      <h2 id="auth-title"><span>인증 키</span></h2>
-      <input id="vip_key" class="input" placeholder="6자리 키" maxlength="8" autocomplete="off">
-      <div class="stack" style="margin-top:8px">
-        <button class="btn primary" onclick="verifyKey()">확인</button>
-        <button class="btn" onclick="goBack()">메인으로</button>
-      </div>
-    </section>
-
-    <section id="section-load" class="section">
-      <h2>세이브 불러오기</h2>
-      <p class="hint">이어하기 코드와 인증 번호만 입력합니다.</p>
-      <input id="transfer_code" class="input" placeholder="이어하기 코드" autocomplete="off">
-      <input id="confirmation_code" class="input" placeholder="인증 번호" maxlength="6" autocomplete="off">
-      <div class="stack" style="margin-top:8px">
-        <button class="btn primary" onclick="loadSave()">불러오기</button>
-        <button class="btn" onclick="goBack()">메인으로</button>
-      </div>
-    </section>
-
-    <section id="section-modify" class="section">
-      <h2>수정</h2>
-      <p class="hint" id="tier-line">항목을 누르면 수량 창이 열립니다.</p>
       <div class="grid">
-        <button class="btn" onclick="openResource('catfood')">통조림</button>
-        <button class="btn" onclick="openResource('xp')">XP</button>
-        <button class="btn" onclick="openResource('normal')">일반 티켓</button>
-        <button class="btn hidden" id="btn-legend" onclick="openResource('legend')">레전드 티켓</button>
-        <button class="btn hidden" id="btn-platinum" onclick="openResource('platinum')">플래티넘 티켓</button>
-        <button class="btn hidden" id="btn-catfruit" onclick="openResource('catfruit')">개다래</button>
-        <button class="btn hidden" id="btn-np" onclick="openResource('np')">NP</button>
-        <button class="btn hidden" id="btn-catseyes" onclick="openResource('catseyes')">캣츠아이</button>
+        <a class="btn" href="https://open.kakao.com/me/nyangs1" target="_blank" rel="noopener"><i class="fa-solid fa-comment-dots"></i>개발자 문의</a>
+        <a class="btn" href="https://open.kakao.com/o/sSBOMwMi" target="_blank" rel="noopener"><i class="fa-solid fa-key"></i>키 구매</a>
       </div>
-      <div class="stack" style="margin-top:8px">
-        <button class="btn primary" id="btn-upload" onclick="modifySave()"><span>변경사항 업로드</span></button>
-        <button class="btn" onclick="goBack()">메인으로</button>
-      </div>
-    </section>
-
-    <section id="section-result" class="section">
-      <h2>업로드 완료</h2>
-      <p class="hint" id="result-desc">새 코드로 게임을 이어하세요. 칸을 누르면 복사됩니다.</p>
-      <div class="cred" onclick="copyText('new_transfer_code')"><small>이어하기 코드</small><strong id="new_transfer_code"></strong></div>
-      <div class="cred" onclick="copyText('new_confirmation_code')"><small>인증 번호</small><strong id="new_confirmation_code"></strong></div>
-      <button class="btn" style="margin-top:10px" onclick="location.reload()">처음으로</button>
-    </section>
+      <a class="btn long" href="https://tiktok.me/group/ZSpWcV4p1/" target="_blank" rel="noopener"><i class="fa-brands fa-tiktok"></i>틱톡 그룹참여시 vip1회권 당첨 기회</a>
+    </div>
   </div>
 </div>
 
-<div id="modal-resource" class="modal hidden" onclick="if(event.target.id==='modal-resource') this.classList.add('hidden')">
-  <div class="sheet" onclick="event.stopPropagation()">
-    <h2 id="resource-title"><span>수정</span></h2>
-    <div id="resource-body"></div>
-    <button class="btn" style="margin-top:10px" onclick="document.getElementById('modal-resource').classList.add('hidden')">닫기</button>
-  </div>
-</div>
 <div id="modal-guide" class="modal hidden" onclick="if(event.target.id==='modal-guide') this.classList.add('hidden')">
   <div class="sheet" onclick="event.stopPropagation()">
-    <h2>사용법</h2>
+    <h2><i class="fa-solid fa-book-open"></i>사용법</h2>
     <p class="hint">1. 일반, 골드, VIP 중 하나를 고릅니다. 골드와 VIP는 키를 입력합니다.</p>
     <p class="hint">2. 냥코 대전쟁에서 설정, 이어하기, 이어하기 코드 발행으로 코드와 인증 번호를 받습니다.</p>
     <p class="hint">3. 그 코드와 인증 번호를 넣고 세이브를 불러옵니다.</p>
     <p class="hint">4. 통조림, XP, 티켓 등을 누르고 수량을 바꾼 뒤 저장합니다. 개다래와 캣츠아이는 종류별 현재 수량이 보입니다.</p>
     <p class="hint">5. 변경사항 업로드를 누르면 새 이어하기 코드가 나옵니다. 게임에서 그 코드로 이어합니다.</p>
-    <button class="btn" onclick="document.getElementById('modal-guide').classList.add('hidden')">닫기</button>
+    <button class="btn" onclick="document.getElementById('modal-guide').classList.add('hidden')"><i class="fa-solid fa-xmark"></i>닫기</button>
   </div>
 </div>
 <div id="modal-benefits" class="modal pop hidden" onclick="if(event.target.id==='modal-benefits') this.classList.add('hidden')">
   <div class="sheet" onclick="event.stopPropagation()">
-    <h2>혜택</h2>
+    <h2><i class="fa-solid fa-gift"></i>혜택</h2>
     <table>
       <tr><th>항목</th><th>일반</th><th>골드</th><th>VIP</th></tr>
       <tr><td>통조림</td><td>2.5만</td><td>10만</td><td>100만</td></tr>
@@ -228,276 +76,21 @@ th{color:var(--sub);font-weight:400}
       <tr><td>캣츠아이</td><td>-</td><td>20</td><td>999</td></tr>
       <tr><td>NP</td><td>-</td><td>1,500</td><td>9,999</td></tr>
     </table>
-    <button class="btn" onclick="document.getElementById('modal-benefits').classList.add('hidden')">닫기</button>
+    <button class="btn" onclick="document.getElementById('modal-benefits').classList.add('hidden')"><i class="fa-solid fa-xmark"></i>닫기</button>
   </div>
 </div>
 <div id="modal-pricing" class="modal pop hidden" onclick="if(event.target.id==='modal-pricing') this.classList.add('hidden')">
   <div class="sheet" onclick="event.stopPropagation()">
-    <h2>가격</h2>
+    <h2><i class="fa-solid fa-tag"></i>가격</h2>
     <table>
       <tr><th></th><th>1회용</th><th>1일</th><th>평생</th></tr>
       <tr><td>골드</td><td>2,000</td><td>5,000</td><td>20,000</td></tr>
       <tr><td>VIP</td><td>3,000</td><td>6,000</td><td>30,000</td></tr>
     </table>
     <p class="hint">단위는 원입니다.</p>
-    <button class="btn" onclick="document.getElementById('modal-pricing').classList.add('hidden')">닫기</button>
+    <button class="btn" onclick="document.getElementById('modal-pricing').classList.add('hidden')"><i class="fa-solid fa-xmark"></i>닫기</button>
   </div>
 </div>
-
-<script>
-let sessionToken="", currentAuthType="guest", currentUserTier="guest", currentVipKey="", selectedTier="guest", currentDeviceId="";
-let pending={}, discordCanClose=false, currentSave={}, owned={};
-let noDiscordMode=false;
-const FRUIT=["보라 개다래나무의 씨앗","빨강 개다래나무의 씨앗","파랑 개다래나무의 씨앗","초록 개다래나무의 씨앗","노랑 개다래나무의 씨앗","보라 개다래 열매","빨강 개다래 열매","파랑 개다래 열매","초록 개다래 열매","노랑 개다래 열매","무지개 개다래 열매","고대 개다래나무의 씨앗","고대 개다래 열매","무지개 개다래나무의 씨앗","황금 개다래 열매","악마 개다래나무의 씨앗","악마 개다래 열매","황금 개다래나무의 씨앗","자수석","홍수석","청수석","녹수석","황수석","자수석 결정","홍수석 결정","청수석 결정","녹수석 결정","황수석 결정","무지개 수석"];
-const EYES=["캣츠아이【EX】","캣츠아이【레어】","캣츠아이【슈퍼 레어】","캣츠아이【울트라 슈퍼 레어】","캣츠아이【레전드】","캣츠아이【다크】"];
-const LIMITS={
-  guest:{catfood:25000,xp:20000000,normal:15},
-  gold:{catfood:100000,xp:100000000,normal:200,legend:5,platinum:5,catfruit:20,np:1500,catseyes:20},
-  vip:{catfood:1000000,xp:100000000,normal:999,legend:999,platinum:999,catfruit:998,np:9999,catseyes:999}
-};
-const RESTRICTED_LIMITS={catfood:10000,xp:0,normal:0};
-
-function liftForKeyboard(){
-  const vv=window.visualViewport;
-  const kb=vv?Math.max(0, window.innerHeight-vv.height-vv.offsetTop):0;
-  document.documentElement.style.setProperty("--kb", kb+"px");
-  const el=document.activeElement;
-  if(kb && el && el.matches && el.matches("input,textarea")) el.scrollIntoView({block:"center"});
-}
-if(window.visualViewport){
-  visualViewport.addEventListener("resize", liftForKeyboard);
-  visualViewport.addEventListener("scroll", liftForKeyboard);
-}
-document.addEventListener("focusin", e=>{
-  if(e.target.matches && e.target.matches("input,textarea")) setTimeout(liftForKeyboard, 80);
-});
-function getOrCreateDeviceId(){
-  let id=localStorage.getItem("nyansly_device_id");
-  if(!id){id=(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2));localStorage.setItem("nyansly_device_id",id)}
-  return id;
-}
-currentDeviceId=getOrCreateDeviceId();
-function showSection(id){
-  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-  const el=document.getElementById(id); if(el) el.classList.add("active");
-}
-function logAction(msg){ document.getElementById("action-log").textContent=msg; }
-function showMessage(msg){ logAction(msg); }
-function goBack(){ logAction(""); showSection(noDiscordMode ? "section-intro-restricted" : "section-intro"); }
-function openInfo(type){ document.getElementById("modal-"+type).classList.remove("hidden"); }
-function copyText(id){ navigator.clipboard.writeText(document.getElementById(id).innerText).then(()=>logAction("복사했습니다")); }
-function cap(){ 
-  if(noDiscordMode && currentUserTier==="guest") return RESTRICTED_LIMITS;
-  return LIMITS[currentUserTier]||LIMITS.guest; 
-}
-function applyTierUi(){
-  const paid=currentUserTier==="gold"||currentUserTier==="vip";
-  const restricted=noDiscordMode && currentUserTier==="guest";
-  ["btn-legend","btn-platinum","btn-catfruit","btn-np","btn-catseyes"].forEach(id=>{
-    document.getElementById(id).classList.toggle("hidden", !paid);
-  });
-  // 제한 모드에서 XP, 일반 티켓 숨김
-  document.querySelector('button[onclick="openResource(\'xp\')"]').classList.toggle("hidden", restricted);
-  document.querySelector('button[onclick="openResource(\'normal\')"]').classList.toggle("hidden", restricted);
-  const names={guest: restricted ? "일반(제한)" : "일반",gold:"골드",vip:"VIP"};
-  document.getElementById("tier-line").textContent=(names[currentUserTier]||"일반")+" · 눌러서 수량을 넣으세요.";
-}
-const FIELDS={catfood:"catfood",xp:"xp",normal:"normal_tickets",legend:"legend_tickets",platinum:"platinum_tickets",np:"np",catfruit:"catfruit",catseyes:"catseyes"};
-function fmt(n){ return Number(n||0).toLocaleString("ko-KR"); }
-function amountOf(type){
-  if(type==="catfruit" && pending.catfruitEach) return pending.catfruitEach;
-  if(type==="catseyes" && pending.catseyesEach) return pending.catseyesEach;
-  if(pending[type]!=null) return pending[type];
-  return owned[type];
-}
-function selectMembership(type){
-  selectedTier=type;
-  if(type==="gold"||type==="vip"){
-    currentAuthType="member";
-    document.getElementById("auth-title").querySelector("span").textContent=type==="gold"?"골드 키":"VIP 키";
-    showSection("section-auth");
-  } else {
-    currentAuthType="guest"; currentUserTier="guest"; applyTierUi(); showSection("section-load");
-  }
-}
-function skipDiscord(){
-  noDiscordMode=true;
-  document.cookie="skip_discord=1; path=/; max-age=86400; samesite=lax";
-  document.getElementById("modal-discord").classList.add("hidden");
-  const modal=document.getElementById("modal-skip-warning");
-  modal.classList.remove("hidden");
-  const bar=document.getElementById("skip-timer-bar");
-  const countEl=document.getElementById("skip-countdown");
-  const btn=document.getElementById("btn-skip-confirm");
-  bar.style.width="0%";
-  setTimeout(()=>bar.style.width="100%", 50);
-  let sec=10;
-  const iv=setInterval(()=>{
-    sec--;
-    countEl.textContent=sec>0 ? sec+"초 후 진행 가능" : "진행 가능";
-    if(sec<=0){
-      clearInterval(iv);
-      btn.disabled=false;
-    }
-  },1000);
-}
-function confirmSkip(){
-  document.getElementById("modal-skip-warning").classList.add("hidden");
-  showSection("section-intro-restricted");
-  logAction("제한 모드로 진행합니다.");
-}
-function closeInstagram(){
-  document.getElementById("modal-instagram").classList.add("hidden");
-  // 인스타 팝업 닫은 후 디스코드 팝업 표시
-  document.getElementById("modal-discord").classList.remove("hidden");
-}
-async function verifyKey(){
-  const key=document.getElementById("vip_key").value.trim();
-  if(!key) return logAction("키를 입력하세요");
-  const fd=new FormData();
-  fd.append("vip_key",key); fd.append("device_id",currentDeviceId); fd.append("requested_tier",selectedTier);
-  const r=await fetch("/api/verify_key",{method:"POST",body:fd});
-  const d=await r.json();
-  if(!d.success) return logAction(d.error||"유효하지 않은 키");
-  currentVipKey=key;
-  currentUserTier=d.tier==="catmaster"?"vip":(d.tier||selectedTier);
-  applyTierUi();
-  showSection("section-load");
-  logAction((currentUserTier==="gold"?"골드":"VIP")+" 인증 완료");
-}
-async function loadSave(){
-  const tc=document.getElementById("transfer_code").value.trim();
-  const cc=document.getElementById("confirmation_code").value.trim();
-  if(!tc||!cc) return logAction("코드와 인증 번호를 입력하세요");
-  const fd=new FormData();
-  fd.append("transfer_code",tc); fd.append("confirmation_code",cc);
-  fd.append("membership_type",currentAuthType); fd.append("requested_tier",selectedTier);
-  if(currentAuthType==="member"){ fd.append("vip_key",currentVipKey); fd.append("device_id",currentDeviceId); }
-  const r=await fetch("/api/load_save",{method:"POST",body:fd});
-  const d=await r.json();
-  if(!d.success) return logAction(d.error||"불러오기 실패");
-  sessionToken=d.token;
-  currentSave=d;
-  owned={
-    catfood:d.catfood??0, xp:d.xp??0, normal:d.normal_tickets??0,
-    legend:d.legend_tickets??0, platinum:d.platinum_tickets??0, np:d.np??0,
-    catfruit:Array.isArray(d.catfruit)?d.catfruit:[],
-    catseyes:Array.isArray(d.catseyes)?d.catseyes:[]
-  };
-  applyTierUi();
-  showSection("section-modify");
-  logAction("세이브를 불러왔습니다");
-}
-function listNames(kind){
-  const names=kind==="catfruit"?FRUIT:EYES;
-  const raw=amountOf(kind);
-  const cur=Array.isArray(raw)?raw:[];
-  const n=cur.length||names.length;
-  return {names, cur, n};
-}
-function openResource(type){
-  const title=document.getElementById("resource-title");
-  const body=document.getElementById("resource-body");
-  const names={catfood:"통조림",xp:"XP",normal:"일반 티켓",legend:"레전드 티켓",platinum:"플래티넘 티켓",np:"NP",catfruit:"개다래",catseyes:"캣츠아이"};
-  title.querySelector("span").textContent=names[type]||type;
-  if(type==="catfruit"||type==="catseyes"){
-    const pack=listNames(type);
-    const max=(cap()[type]||0);
-    const rows=[];
-    for(let i=0;i<pack.n;i++){
-      const label=pack.names[i];
-      if(!label) continue;
-      const have=Array.isArray(owned[type])?Number(owned[type][i]||0):0;
-      const val=pack.cur[i]??"";
-      if(type==="catfruit" && i===18) rows.push(`<p class="hint" style="margin:12px 0 0">수석</p>`);
-      rows.push(`<label class="line"><span>${label}<small>현재 ${fmt(have)}</small></span><input class="input each" data-i="${i}" type="number" min="0" max="${max}" value="${val}"></label>`);
-    }
-    body.innerHTML=`
-      <p class="hint">최대 ${max.toLocaleString()}. 일괄은 모든 칸을 같은 수로 채웁니다.</p>
-      <input id="bulk-val" class="input" type="number" min="0" max="${max}" placeholder="일괄 수량">
-      <button class="btn" style="margin-top:8px" onclick="fillBulk()">모든 종류에 같은 수량</button>
-      <div style="margin-top:8px">${rows.join("")}</div>
-      <button class="btn primary" style="margin-top:10px" onclick="saveEach('${type}')">이 수량으로 저장</button>`;
-  } else {
-    const max=cap()[type];
-    const have=owned[type];
-    const now=amountOf(type);
-    body.innerHTML=`<p class="hint">현재 ${have==null?"-":fmt(have)}개 · 최대 ${Number(max||0).toLocaleString("ko-KR")}</p>
-      <input id="res-val" class="input" type="number" placeholder="바꿀 수량" value="${now==null?"":now}">
-      <button class="btn primary" style="margin-top:8px" onclick="savePending('${type}')">저장</button>`;
-  }
-  document.getElementById("modal-resource").classList.remove("hidden");
-}
-function fillBulk(){
-  const v=document.getElementById("bulk-val").value;
-  if(v==="") return logAction("일괄 수량을 입력하세요");
-  document.querySelectorAll(".each").forEach(el=>el.value=v);
-  logAction("모든 칸을 "+v+"으로 채웠습니다");
-}
-function saveEach(type){
-  const vals=[...document.querySelectorAll(".each")].map(el=>Number(el.value||0));
-  const max=cap()[type]||0;
-  if(vals.some(n=>n>max)) return logAction("최대 "+max+"까지입니다");
-  if(type==="catfruit"){ pending.catfruitEach=vals; delete pending.catfruit; }
-  else { pending.catseyesEach=vals; delete pending.catseyes; }
-  currentSave[type]=vals;
-  document.getElementById("modal-resource").classList.add("hidden");
-  logAction((type==="catfruit"?"개다래":"캣츠아이")+" 수량을 저장했습니다. 업로드하면 반영됩니다");
-}
-function savePending(key){
-  const v=document.getElementById("res-val").value;
-  if(v==="") return logAction("수량을 입력하세요");
-  const n=Number(v);
-  const max=cap()[key];
-  if(max!=null && n>max) return logAction("최대 "+max.toLocaleString()+"까지입니다");
-  pending[key]=n;
-  currentSave[FIELDS[key]]=n;
-  document.getElementById("modal-resource").classList.add("hidden");
-  logAction("저장했습니다. 업로드하면 반영됩니다");
-}
-async function modifySave(){
-  const fd=new FormData();
-  if(pending.catfood!=null) fd.append("catfood",pending.catfood);
-  if(pending.xp!=null) fd.append("xp",pending.xp);
-  if(pending.normal!=null) fd.append("normal_tickets",pending.normal);
-  if(pending.legend!=null) fd.append("legend_tickets",pending.legend);
-  if(pending.platinum!=null) fd.append("platinum_tickets",pending.platinum);
-  if(pending.np!=null) fd.append("np",pending.np);
-  if(pending.catfruitEach) fd.append("catfruit_each", JSON.stringify(pending.catfruitEach));
-  else if(pending.catfruit!=null) fd.append("catfruit",pending.catfruit);
-  if(pending.catseyesEach) fd.append("catseyes_each", JSON.stringify(pending.catseyesEach));
-  else if(pending.catseyes!=null) fd.append("catseyes",pending.catseyes);
-  const btn=document.getElementById("btn-upload");
-  const label=btn.querySelector("span");
-  btn.disabled=true; label.textContent="업로드 중";
-  try{
-    const r=await fetch("/api/modify_and_upload",{method:"POST",headers:{"x-session-token":sessionToken},body:fd});
-    const d=await r.json();
-    if(!d.success){ logAction(d.error||"업로드 실패"); return; }
-    showSection("section-result");
-    document.getElementById("new_transfer_code").textContent=d.transfer_code;
-    document.getElementById("new_confirmation_code").textContent=d.confirmation_code;
-    if(d.key_burned) document.getElementById("result-desc").textContent="새 코드로 이어하세요. 1회용 키는 사용 처리되었습니다.";
-  }catch{ logAction("서버 통신 오류"); }
-  finally{ btn.disabled=false; label.textContent="변경사항 업로드"; }
-}
-(async function(){
-  const q=new URLSearchParams(location.search).get("discord");
-  const msg=document.getElementById("discord-msg");
-  if(q==="missing") msg.textContent="아직 서버에 들어오지 못했습니다. 다시 승인하세요.";
-  else if(q==="error") msg.textContent="디스코드 확인에 실패했습니다. 다시 시도하세요.";
-  try{
-    const r=await fetch("/api/discord/status");
-    const d=await r.json();
-    if(d.ok){
-      document.getElementById("modal-instagram").classList.add("hidden");
-      document.getElementById("modal-discord").classList.add("hidden");
-      document.cookie="skip_discord=; path=/; max-age=0";
-      noDiscordMode=false;
-      showSection("section-intro");
-    }
-  }catch{}
-})();
-</script>
+<script src="/static/js/editor.js"></script>
 </body>
 </html>

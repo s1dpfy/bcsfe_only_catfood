@@ -3,9 +3,18 @@ from __future__ import annotations
 from bcsfe import core
 import datetime
 
+_DATA_READY = False
+
+def ensure_game_data():
+    global _DATA_READY
+    if _DATA_READY:
+        return
+    core.core_data.init_data()
+    _DATA_READY = True
+
 class BCSFEService:
     def __init__(self):
-        core.core_data.init_data()
+        ensure_game_data()
 
         self.handler: core.ServerHandler | None = None
         self.save: core.SaveFile | None = None
@@ -157,6 +166,21 @@ class BCSFEService:
             if hasattr(save.gamatoto, 'level'): save.gamatoto.level = min(value, 136)
             elif hasattr(save.gamatoto, 'level_'): save.gamatoto.level_ = min(value, 136)
         except: pass
+
+    def editor_view(self) -> dict:
+        save = self._require_save()
+        fruit = getattr(save, "catfruit", None) or []
+        eyes = getattr(save, "catseyes", None) or []
+        return {
+            "catfood": save.catfood,
+            "xp": save.xp,
+            "np": save.np,
+            "normal_tickets": save.normal_tickets,
+            "legend_tickets": save.legend_tickets,
+            "platinum_tickets": save.platinum_tickets,
+            "catfruit": list(fruit),
+            "catseyes": list(eyes),
+        }
 
     def summary(self):
         mvm = core.core_data.max_value_manager

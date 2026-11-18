@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>냥슬리 관리자 패널</title>
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
 <style>
 :root{--bg:#000;--card:#141414;--line:#2a2a2a;--ink:#f5f5f5;--sub:#c8c8c8;--ok:#3dd68c;--danger:#ff453a;--gold:#e6a822;--blue:#0a84ff}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -16,6 +17,7 @@ button,input,select,a{font:inherit;color:inherit}
 button{cursor:pointer}
 .app{max-width:720px;margin:0 auto;padding:16px 14px 40px}
 h1{font-size:30px;font-weight:400;letter-spacing:-.4px;display:flex;align-items:center;gap:8px}
+.btn i,h1 i,h2 i{width:1.15em;text-align:center;font-style:normal}
 .sub{color:var(--sub);font-size:15px;margin:4px 0 14px}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
 .section{display:none}
@@ -62,26 +64,26 @@ input:checked+.toggle-slider:before{transform:translateX(20px);background:#000}
 </head>
 <body>
 <div class="app">
-  <h1>냥슬리 관리자</h1>
+  <h1><i class="fa-solid fa-shield-halved"></i>냥슬리 관리자</h1>
   <p class="sub">인증 키 및 에디터 관리</p>
   <div id="message-box" class="msg"></div>
 
   <section id="section-login" class="panel">
-    <h2>관리자 로그인</h2>
+    <h2><i class="fa-solid fa-right-to-bracket"></i>관리자 로그인</h2>
     <input id="admin-pass" class="input" type="password" placeholder="비밀번호" autocomplete="off">
-    <button class="btn primary" style="margin-top:8px" onclick="checkPassword()">로그인</button>
+    <button class="btn primary" style="margin-top:8px" onclick="checkPassword()"><i class="fa-solid fa-right-to-bracket"></i>로그인</button>
   </section>
 
   <section id="section-denied" class="panel hidden">
     <p style="text-align:center;color:var(--danger);margin-bottom:12px">비밀번호가 올바르지 않습니다.</p>
-    <button class="btn" onclick="location.reload()">다시 시도</button>
+    <button class="btn" onclick="location.reload()"><i class="fa-solid fa-rotate-right"></i>다시 시도</button>
   </section>
 
   <div id="section-panel" class="hidden">
     <div class="panel">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div>
-          <div id="status-text" style="font-size:18px">에디터 개방됨</div>
+          <div id="status-text" style="font-size:18px"><i class="fa-solid fa-lock-open"></i> 에디터 개방됨</div>
           <div class="hint" style="margin:0">접속 제어</div>
         </div>
         <label class="toggle-switch">
@@ -92,7 +94,7 @@ input:checked+.toggle-slider:before{transform:translateX(20px);background:#000}
     </div>
 
     <div class="panel">
-      <h2>새 인증 키 발급</h2>
+      <h2><i class="fa-solid fa-key"></i>새 인증 키 발급</h2>
       <select id="key-type" class="input">
         <option value="gold_use_1">골드 1회용 (2,000원)</option>
         <option value="gold_1">골드 1일 무제한 (5,000원)</option>
@@ -101,7 +103,7 @@ input:checked+.toggle-slider:before{transform:translateX(20px);background:#000}
         <option value="vip_1">VIP 1일 무제한 (6,000원)</option>
         <option value="vip_999">VIP 평생 무제한 (30,000원)</option>
       </select>
-      <button class="btn primary" id="btn-generate" onclick="generateVipKey()" style="margin-top:8px">키 발급하기</button>
+      <button class="btn primary" id="btn-generate" onclick="generateVipKey()" style="margin-top:8px"><i class="fa-solid fa-plus"></i><span>키 발급하기</span></button>
       <div id="new-key-container" class="hidden" style="margin-top:12px">
         <div class="cred" onclick="copyKey()">
           <small>발급된 키</small>
@@ -113,8 +115,8 @@ input:checked+.toggle-slider:before{transform:translateX(20px);background:#000}
 
     <div class="panel">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <h2 style="margin:0">발급된 키</h2>
-        <button class="btn btn-small" onclick="loadKeys()">새로고침</button>
+        <h2 style="margin:0"><i class="fa-solid fa-list"></i>발급된 키</h2>
+        <button class="btn btn-small" onclick="loadKeys()"><i class="fa-solid fa-arrows-rotate"></i>새로고침</button>
       </div>
       <input id="search-input" class="input" placeholder="키, 티어, 상태 검색" oninput="renderFiltered()">
       <div id="stats-bar" class="stats"></div>
@@ -126,8 +128,11 @@ input:checked+.toggle-slider:before{transform:translateX(20px);background:#000}
 </div>
 
 <script>
-const ADMIN_PASSWORD = "110923";
 let allKeys = {};
+
+function esc(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+}
 
 function showMessage(msg, isError = false) {
   const box = document.getElementById('message-box');
@@ -137,16 +142,24 @@ function showMessage(msg, isError = false) {
   setTimeout(() => { if (!isError) box.classList.add('hidden'); }, 3000);
 }
 
-function checkPassword() {
+async function checkPassword() {
   const input = document.getElementById('admin-pass').value.trim();
-  if (input === ADMIN_PASSWORD) {
-    document.getElementById('section-login').classList.add('hidden');
-    document.getElementById('section-panel').classList.remove('hidden');
-    loadStatus();
-    loadKeys();
-  } else {
-    document.getElementById('section-login').classList.add('hidden');
-    document.getElementById('section-denied').classList.remove('hidden');
+  const formData = new FormData();
+  formData.append('admin_password', input);
+  try {
+    const response = await fetch('/api/admin_login', { method: 'POST', body: formData });
+    const data = await response.json();
+    if (data.success) {
+      document.getElementById('section-login').classList.add('hidden');
+      document.getElementById('section-panel').classList.remove('hidden');
+      loadStatus();
+      loadKeys();
+    } else {
+      document.getElementById('section-login').classList.add('hidden');
+      document.getElementById('section-denied').classList.remove('hidden');
+    }
+  } catch (e) {
+    showMessage("서버 통신 중 오류가 발생했습니다.", true);
   }
 }
 
@@ -165,13 +178,10 @@ async function loadStatus() {
 function updateToggleUI(locked) {
   document.getElementById('lock-toggle').checked = locked;
   const statusText = document.getElementById('status-text');
-  if (locked) {
-    statusText.textContent = "에디터 잠금됨";
-    statusText.style.color = "var(--danger)";
-  } else {
-    statusText.textContent = "에디터 개방됨";
-    statusText.style.color = "var(--ok)";
-  }
+  statusText.style.color = locked ? "var(--danger)" : "var(--ok)";
+  statusText.innerHTML = locked
+    ? '<i class="fa-solid fa-lock"></i> 에디터 잠금됨'
+    : '<i class="fa-solid fa-lock-open"></i> 에디터 개방됨';
 }
 
 async function toggleLock() {
@@ -203,10 +213,9 @@ async function generateVipKey() {
   const duration = parts.slice(1).join('_');
 
   btn.disabled = true;
-  btn.textContent = "발급 중...";
+  btn.querySelector("span").textContent = "발급 중...";
 
   const formData = new FormData();
-  formData.append('admin_password', ADMIN_PASSWORD);
   formData.append('duration_type', duration);
   formData.append('tier', tier);
 
@@ -220,18 +229,21 @@ async function generateVipKey() {
       loadKeys();
     } else showMessage(data.error || "키 발급 실패", true);
   } catch (e) { showMessage("서버 통신 중 오류가 발생했습니다.", true); }
-  finally { btn.disabled = false; btn.textContent = "키 발급하기"; }
+  finally { btn.disabled = false; btn.querySelector("span").textContent = "키 발급하기"; }
 }
 
 async function loadKeys() {
   const formData = new FormData();
-  formData.append('admin_password', ADMIN_PASSWORD);
   try {
     const response = await fetch('/api/list_keys', { method: 'POST', body: formData });
     const data = await response.json();
     if (data.success) {
       allKeys = data.keys || {};
       renderFiltered();
+    } else {
+      allKeys = {};
+      renderFiltered();
+      showMessage(data.error || "키 목록을 불러오지 못했습니다.", true);
     }
   } catch (e) { showMessage("키 목록을 불러오지 못했습니다.", true); }
 }
@@ -265,12 +277,12 @@ function updateStats(list, now) {
     }
   });
   document.getElementById('stats-bar').innerHTML = `
-    <span>전체 ${total}</span>
-    <span>골드 ${gold}</span>
-    <span>VIP ${vip}</span>
-    <span style="color:var(--ok)">활성 ${active}</span>
-    <span style="color:var(--danger)">만료/사용 ${expired}</span>
-    <span>1회용 ${onetime}</span>
+    <span><i class="fa-solid fa-key"></i> 전체 ${total}</span>
+    <span><i class="fa-solid fa-coins"></i> 골드 ${gold}</span>
+    <span><i class="fa-solid fa-crown"></i> VIP ${vip}</span>
+    <span style="color:var(--ok)"><i class="fa-solid fa-circle-check"></i> 활성 ${active}</span>
+    <span style="color:var(--danger)"><i class="fa-solid fa-circle-xmark"></i> 만료/사용 ${expired}</span>
+    <span><i class="fa-solid fa-ticket"></i> 1회용 ${onetime}</span>
   `;
 }
 
@@ -318,11 +330,11 @@ function renderKeys(keys, now) {
       <div class="key-header">
         <div>
           <span class="tier-badge ${tierClass}">${tierLabel}</span>
-          <span class="key-val" onclick="copyText('${keyObj.id}')">${keyObj.id}</span>
+          <span class="key-val" onclick="copyText('${esc(keyObj.id)}')">${esc(keyObj.id)}</span>
         </div>
         <div class="action-group">
-          <button class="btn btn-small" onclick="resetDevice('${keyObj.id}')">초기화</button>
-          <button class="btn btn-small danger" onclick="deleteKey('${keyObj.id}')">삭제</button>
+          <button class="btn btn-small" onclick="resetDevice('${esc(keyObj.id)}')"><i class="fa-solid fa-rotate-left"></i>초기화</button>
+          <button class="btn btn-small danger" onclick="deleteKey('${esc(keyObj.id)}')"><i class="fa-solid fa-trash"></i>삭제</button>
         </div>
       </div>
       <div class="key-meta">
@@ -338,7 +350,6 @@ function renderKeys(keys, now) {
 async function resetDevice(keyId) {
   if (!confirm(`[${keyId}] 키의 기기 정보를 초기화할까요?\n새 기기에서 다시 인증할 수 있습니다.`)) return;
   const formData = new FormData();
-  formData.append('admin_password', ADMIN_PASSWORD);
   formData.append('vip_key', keyId);
   try {
     const response = await fetch('/api/reset_key_device', { method: 'POST', body: formData });
@@ -351,7 +362,6 @@ async function resetDevice(keyId) {
 async function deleteKey(keyId) {
   if (!confirm(`[${keyId}] 키를 삭제할까요?`)) return;
   const formData = new FormData();
-  formData.append('admin_password', ADMIN_PASSWORD);
   formData.append('vip_key', keyId);
   try {
     const response = await fetch('/api/delete_key', { method: 'POST', body: formData });
