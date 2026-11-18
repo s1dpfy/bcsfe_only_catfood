@@ -44,13 +44,21 @@
       </div>
       <div class="grid">
         <a class="btn" href="https://open.kakao.com/o/sqokuDXi" target="_blank" rel="noopener"><i class="fa-solid fa-comment-dots"></i>개발자 문의</a>
-        <a class="btn" href="https://open.kakao.com/o/sqokuDXi" target="_blank" rel="noopener"><i class="fa-solid fa-key"></i>키 구매</a>
+        <button class="btn" type="button" onclick="openInfo('buy')"><i class="fa-solid fa-key"></i>키 구매</button>
       </div>
       <a class="btn long" href="https://tiktok.me/group/ZSpWcV4p1/" target="_blank" rel="noopener"><i class="fa-brands fa-tiktok"></i>틱톡 그룹참여시 vip1회권 당첨 기회</a>
     </div>
   </div>
 </div>
 
+<div id="modal-buy" class="modal pop hidden" onclick="if(event.target.id==='modal-buy') this.classList.add('hidden')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <h2><i class="fa-solid fa-key"></i>키 구매</h2>
+    <p class="hint">기프트 카드나 계좌이체 등으로 가능합니다.</p>
+    <a class="btn primary" href="https://open.kakao.com/o/sqokuDXi" target="_blank" rel="noopener"><i class="fa-solid fa-bag-shopping"></i>구매하러 가기</a>
+    <button class="btn" style="margin-top:10px" onclick="document.getElementById('modal-buy').classList.add('hidden')"><i class="fa-solid fa-xmark"></i>닫기</button>
+  </div>
+</div>
 <div id="modal-guide" class="modal hidden" onclick="if(event.target.id==='modal-guide') this.classList.add('hidden')">
   <div class="sheet" onclick="event.stopPropagation()">
     <h2><i class="fa-solid fa-book-open"></i>사용법</h2>
@@ -76,7 +84,9 @@
       <tr><td>캣츠아이</td><td>-</td><td>20</td><td>999</td></tr>
       <tr><td>NP</td><td>-</td><td>1,500</td><td>9,999</td></tr>
     </table>
-    <button class="btn" onclick="document.getElementById('modal-benefits').classList.add('hidden')"><i class="fa-solid fa-xmark"></i>닫기</button>
+    <p class="hint">기프트 카드나 계좌이체 등으로 가능합니다.</p>
+    <a class="btn primary" href="https://open.kakao.com/o/sqokuDXi" target="_blank" rel="noopener"><i class="fa-solid fa-bag-shopping"></i>구매하러 가기</a>
+    <button class="btn" style="margin-top:10px" onclick="document.getElementById('modal-benefits').classList.add('hidden')"><i class="fa-solid fa-xmark"></i>닫기</button>
   </div>
 </div>
 <div id="modal-pricing" class="modal pop hidden" onclick="if(event.target.id==='modal-pricing') this.classList.add('hidden')">
@@ -87,8 +97,9 @@
       <tr><td>골드</td><td>2,000</td><td>5,000</td><td>20,000</td></tr>
       <tr><td>VIP</td><td>3,000</td><td>6,000</td><td>30,000</td></tr>
     </table>
-    <p class="hint">단위는 원입니다.</p>
-    <button class="btn" onclick="document.getElementById('modal-pricing').classList.add('hidden')"><i class="fa-solid fa-xmark"></i>닫기</button>
+    <p class="hint">단위는 원입니다. 기프트 카드나 계좌이체 등으로 가능합니다.</p>
+    <a class="btn primary" href="https://open.kakao.com/o/sqokuDXi" target="_blank" rel="noopener"><i class="fa-solid fa-bag-shopping"></i>구매하러 가기</a>
+    <button class="btn" style="margin-top:10px" onclick="document.getElementById('modal-pricing').classList.add('hidden')"><i class="fa-solid fa-xmark"></i>닫기</button>
   </div>
 </div>
 <script src="/static/js/editor.js"></script>
